@@ -1,0 +1,2050 @@
+--[[
+  _______ _____ _____ ______ _____   	 _    _ _   _ _______      ________ _____   _____         _      
+ |__   __|_   _/ ____|  ____|  __ \  	| |  | | \ | |_   _\ \    / /  ____|  __ \ / ____|  /\   | |     
+    | |    | || |  __| |__  | |__) | 	| |  | |  \| | | |  \ \  / /| |__  | |__) | (___   /  \  | |     
+    | |    | || | |_ |  __| |  _  /  	| |  | | . ` | | |   \ \/ / |  __| |  _  / \___ \ / /\ \ | |     
+    | |   _| || |__| | |____| | \ \  	| |__| | |\  |_| |_   \  /  | |____| | \ \ ____) / ____ \| |____ 
+    |_|  |_____\_____|______|_|  \_\ 	 \____/|_| \_|_____|   \/   |______|_|  \_\_____/_/    \_\______|                                                                                                    
+]]
+repeat task.wait() until game:IsLoaded() and game:GetService("Players").LocalPlayer
+
+
+
+do--//Instances
+	ALPHA = true
+	Folder = Instance.new("Folder",game)
+	ScreenGui = Instance.new("ScreenGui")
+	CmdBarFrame = Instance.new("Frame")
+	UICorner = Instance.new("UICorner")
+	Out = Instance.new("ImageLabel")
+	UICorner_2 = Instance.new("UICorner")
+	CommandBar = Instance.new("TextBox")
+	UIStroke = Instance.new("UIStroke")
+	Commands = Instance.new("ImageLabel")
+	UICorner_3 = Instance.new("UICorner")
+	UIStroke_2 = Instance.new("UIStroke")
+	CommandsList = Instance.new("ScrollingFrame")
+	UIListLayout = Instance.new("UIListLayout")
+	TEMP_CMD = Instance.new("TextLabel")
+	plr = game:GetService("Players").LocalPlayer
+	UIS,UserInputService = game:GetService'UserInputService',game:GetService("UserInputService")
+	char = plr.Character
+	Mouse = plr:GetMouse()
+	RunService = game:GetService("RunService")
+	gethui=gethui or nil
+end
+do--//Other
+	R15 = false
+	--
+	firetouchinterest=firetouchinterest
+	hookfunction=hookfunction
+	hookmetamethod=hookmetamethod
+	getnamecallmethod=getnamecallmethod
+	getgenv=getgenv
+	--
+	Permanent = {}
+	HasFireTouch = false
+	CommandsGot= 0
+	Temp = {
+		JumpCoolDown=false,
+		HitBoxes = {},
+		Viewing=nil,
+		Waypoints = {},
+		Esps={},
+		Esps1={},
+		CmdsC = false,
+		Points = true,
+	}
+	TigerGuis = {}
+	unloaded = false
+	Prefix=  "!"
+	TableCommands = {}
+	CommandsRawList = {}
+	States = {MouseDown=false,NoClip=false,AutoRespawn=false,AntiKick=false}
+	repeat task.wait()until plr.Character:FindFirstChildOfClass("Humanoid")
+	NormalSpeed = plr.Character:FindFirstChildOfClass("Humanoid").WalkSpeed
+
+end
+if game:FindFirstChild("Tiger_FE") then
+	if getgenv then
+		getgenv().TigerNot("Tiger is already loaded!")
+	end
+	return
+end
+do--//Setup
+	if plr.Character:FindFirstChildOfClass("Humanoid") and plr.Character:FindFirstChildOfClass("Humanoid").RigType == Enum.HumanoidRigType.R15 then
+		R15 = true
+	end
+	Folder.Name = "Tiger_FE"
+
+end
+Verify_Command=function(NAME)
+	NAME = NAME:lower()
+	if not string.find(NAME,Prefix) then
+		NAME = Prefix..NAME
+	end
+	return NAME
+end;
+Execute_Command = function(Name,Raw)
+	task.spawn(function()
+		Name = Name:lower()
+		local Saved_Name = Name
+		if not string.find(Saved_Name," ") then
+			Saved_Name = Saved_Name.." "
+		end
+		if Verify_Command(Name) then
+			for i,v in pairs(TableCommands) do
+				if v then
+					if v["Name"]:lower() == Saved_Name:split(" ")[1] then
+						v["Callback"](Raw)
+					end
+				end
+			end
+		end
+	end)
+end
+FindPlayer = function(h,h2)
+	if string.lower(h) == "me" then
+		return plr
+	else
+		h = h:gsub("%s+", "")
+		for m, n in pairs(game:GetService("Players"):GetPlayers()) do
+			if n.Name:lower():match("^" .. h:lower()) or n.DisplayName:lower():match("^" .. h:lower()) then
+				return n
+			end
+		end
+	end
+	return nil
+end
+Add_Command = function(Name,Callback,Does,PlayerCommand)
+	task.spawn(function()
+		if Name and Callback then
+			if PlayerCommand and PlayerCommand == "PLAYER_COMMAND" then
+				PlayerCommand = " [PLAYER]"
+			elseif PlayerCommand == "TOGGLE_COMMAND" then
+				PlayerCommand = " ON/OFF"
+			elseif PlayerCommand == "NUMBER_COMMAND" then
+				PlayerCommand = " NUMBER"
+			elseif PlayerCommand == "STRING_COMMAND" then
+				PlayerCommand = " STRING_COMMAND"
+			end
+			if PlayerCommand == nil then
+				PlayerCommand=""
+			end
+			local CloneTXT = TEMP_CMD:Clone()
+
+			if typeof(PlayerCommand):lower()~="string" then
+				CloneTXT.Text = Prefix..tostring(Name).."".." | "..Does or ""
+			else
+				CloneTXT.Text = Prefix..tostring(Name)..PlayerCommand.." | "..Does or ""
+			end
+			CloneTXT.Parent = CommandsList
+			CloneTXT.Visible = true
+			if PlayerCommand == true then
+				CloneTXT.Visible = false
+			end
+			CommandsGot+=1
+			CommandsRawList[#CommandsRawList+1]=CloneTXT
+			TableCommands[#TableCommands+1] = {
+				["Name"] = Prefix..Name,
+				["Callback"] = Callback,
+				["Does"] = Does or ""
+			}
+		end
+	end)
+end
+local Protected = {}
+local ProtectInstance = function(a)
+	if not table.find(Protected,a) then
+		Protected[#Protected+1]=a
+	end
+end
+local UnprotectInstance = function(a)
+	if table.find(Protected,a) then
+		table.remove(Protected,table.find(Protected,a))
+	end
+end
+do --//Check if firetouchinterest REALLY works
+	task.spawn(function()
+		pcall(function()
+			local FirePart =Instance.new("Part",workspace)
+			FirePart.CFrame = CFrame.new(0,2^10,0)
+			if not firetouchinterest then
+				HasFireTouch = false
+				FirePart:Destroy()
+			end
+			if FirePart and FirePart.Parent~=nil then
+				FirePart.Touched:Connect(function()
+					HasFireTouch = true
+					FirePart:Destroy()
+				end)
+				plr.Character:WaitForChild("Head")
+				if firetouchinterest and FirePart then
+					firetouchinterest(plr.Character.Head,FirePart,0)
+					firetouchinterest(plr.Character.Head,FirePart,1)
+				end
+				wait(.6)
+				if firetouchinterest and FirePart then
+					firetouchinterest(plr.Character.Head,FirePart,0)
+					firetouchinterest(plr.Character.Head,FirePart,1)
+				end
+			end
+		end)
+	end)
+end
+do--//Functions
+	IsZoomedIn = function()
+		local Mag = (char["Head"].Position-workspace.CurrentCamera.CFrame.Position).Magnitude
+		if Mag <4 then
+			return true
+		end
+		return nil
+	end
+	Touch = function(Part)
+		if Part and IsAPart(Part) then
+			if HasFireTouch then
+				firetouchinterest(plr.Character.Head,Part,0)
+				firetouchinterest(plr.Character.Head,Part,1)
+			else
+				local Saved = Part.CFrame
+				local Touched = false
+				Part.Touched:Connect(function(Hit)
+					if Hit and Hit.Parent and Hit.Parent:FindFirstChildOfClass("Humanoid") and Hit.Parent:FindFirstChildOfClass("Humanoid") == GetHumanoid() then
+						Touched = true
+					end
+				end)
+				repeat wait() Part.CFrame = CurrentPos() until Touched == true
+				wait()
+			end
+		end
+	end
+	if ALPHA == false then
+		local Teleport = (syn and syn.queue_on_teleport) or queue_on_teleport
+		if Teleport then
+			Teleport([[loadstring(game:HttpGet("pornhub")()]])--//don't touch this
+		end
+	end
+	FollowMove = function(Position)
+		local PathfindingService = game:GetService("PathfindingService")
+		local path = PathfindingService:CreatePath()
+		local waypoints
+		local nextWaypointIndex
+		local reachedConnection
+		local blockedConnection
+		local Blocks ={}
+		local function followPath(destination)
+			local success, errorMessage = pcall(function()
+				path:ComputeAsync(plr.Character.PrimaryPart.Position, destination)
+
+			end)
+			if success and path.Status == Enum.PathStatus.Success then
+				waypoints = path:GetWaypoints()
+
+				blockedConnection = path.Blocked:Connect(function(blockedWaypointIndex)
+					if blockedWaypointIndex >= nextWaypointIndex then
+						blockedConnection:Disconnect()
+						followPath(destination)
+					end
+				end)
+				if not reachedConnection then
+					reachedConnection = GetHumanoid().MoveToFinished:Connect(function(reached)
+						if reached and nextWaypointIndex < #waypoints then
+							nextWaypointIndex += 1
+							GetHumanoid():MoveTo(waypoints[nextWaypointIndex].Position)
+						else
+							reachedConnection:Disconnect()
+							blockedConnection:Disconnect()
+						end
+					end)
+				end
+				nextWaypointIndex = 2
+				GetHumanoid():MoveTo(waypoints[nextWaypointIndex].Position)
+			else
+				return "Error"
+			end
+		end
+		if typeof(Position):lower()=="cframe" then
+			followPath(Position.Position)
+		else
+			followPath(Position)
+		end
+	end
+	notfound = function()
+		Notif("Player not found!")
+	end
+	IsAPart = function(a)
+		if a and a:IsA("Part") or a:IsA("MeshPart") or a:IsA("UnionOperation") or a:IsA("TrussPart") or a:IsA("WedgePart") or a:IsA("CornerWedgePart") then
+			return true
+		end
+		return nil
+	end
+	GetTool = function()
+		local Got = nil
+		for i,v in pairs(plr.Backpack:GetChildren()) do
+			if v and v:IsA("Tool") then
+				Got=v
+				break
+			end
+		end
+		if char:FindFirstChildOfClass("Tool") then
+			Got=char:FindFirstChildOfClass("Tool")
+		end
+		return Got
+	end
+	CurrentPos = function()
+		return char:FindFirstChild("HumanoidRootPart").CFrame
+	end
+	GetHumanoid = function()
+		return plr.Character:FindFirstChildOfClass("Humanoid")
+	end
+	MoveTo = function(Cf,n)
+		for i = 1,n or 10 do
+			pcall(function()
+				char:FindFirstChild("HumanoidRootPart").CFrame = Cf
+			end)
+			RunService.Stepped:Wait()
+		end
+	end
+
+	Bring = function(Player,Position,Type) --//Holy shit I always have errors with bring
+		if Player then
+			local Tool = GetTool()
+			local CurrentChar = plr.Character
+			if not Tool then
+				Notif("You need to have a tool!")
+				return
+			else
+				if not Tool:FindFirstChild("Handle") then
+					Notif("You need a tool with a handle!")
+					return
+				end
+				local To=Position
+				if Position==nil then
+					To = CurrentPos()
+				end
+				local TimeOut = 0
+				local Pos = CurrentPos()
+				task.spawn(function()
+					plr.Character:FindFirstChildOfClass("Humanoid"):RemoveAccessories()
+					local c = plr.Character:FindFirstChildOfClass("Humanoid"):Clone()
+					plr.Character:FindFirstChildOfClass("Humanoid"):Destroy()
+					c.Parent = plr.Character
+				end)
+				Tool.Parent = char
+				local SetPosition= nil
+				local RunTime=0
+				SetPosition = game:GetService("RunService").RenderStepped:Connect(function()
+					char["HumanoidRootPart"].CFrame = To
+					RunTime = RunTime+1
+					if RunTime >1000 then
+						SetPosition:Disconnect()
+						return
+					end
+				end)
+				if Type and Type == 1 then
+					Tool.GripPos = Vector3.new(0,0,0)
+				end
+				repeat task.wait()
+					TimeOut+=1
+					if Tool and Tool:FindFirstChild("Handle") and firetouchinterest then
+						firetouchinterest(Tool:FindFirstChild("Handle"),Player.Character["HumanoidRootPart"],0)
+						firetouchinterest(Player.Character["HumanoidRootPart"],Tool:FindFirstChild("Handle"),0)
+						task.wait()
+						firetouchinterest(Player.Character["HumanoidRootPart"],Tool:FindFirstChild("Handle"),1)
+						firetouchinterest(Tool:FindFirstChild("Handle"),Player.Character["HumanoidRootPart"],1)
+					end
+					if Tool and Tool:FindFirstChild("Handle") then
+						Player.Character:SetPrimaryPartCFrame(Tool:FindFirstChild("Handle").CFrame)
+					end
+				until Tool.Parent ~= char or TimeOut>=500
+				if Type and Type == 1 then
+					local IsDone = false
+					GetHumanoid().Health = 0
+					plr.Character = nil
+					wait()
+					CurrentChar:Destroy()
+					local Connection = nil
+					Connection = plr.CharacterAdded:Connect(function(c)
+						repeat task.wait()until c and c:FindFirstChild("HumanoidRootPart")
+						for i =1,5 do
+							c:FindFirstChild("HumanoidRootPart").CFrame = Pos
+							RunService.RenderStepped:Wait()
+						end
+						IsDone = true
+						Connection:Disconnect()
+					end)
+					repeat task.wait() until IsDone
+					return
+				end
+				if Tool and Tool.Parent == plr.Backpack then
+					Notif("stopped because you Unequipped the tool  ")
+				end
+				SetPosition:Disconnect()
+				task.wait()
+				for i =1,20 do
+					char:SetPrimaryPartCFrame(To)
+					RunService.RenderStepped:Wait()
+				end
+				wait()
+				char:MoveTo(Player.Character:FindFirstChild("Head").Position+Vector3.new(0,2,0))
+				wait()
+				char:SetPrimaryPartCFrame(Pos)
+				local Connection = nil
+				Connection = plr.CharacterAdded:Connect(function(c)
+					repeat task.wait()until c and c:FindFirstChild("HumanoidRootPart")
+					for i =1,5 do
+						c:FindFirstChild("HumanoidRootPart").CFrame = Pos
+						RunService.RenderStepped:Wait()
+					end
+					Connection:Disconnect()
+				end)
+			end
+		end
+		return
+	end
+
+	AutoRespawn = function()
+		local SavedPos = nil
+		local Connection = nil
+		char:FindFirstChildOfClass("Humanoid").Died:Connect(function()
+			SavedPos = char:FindFirstChild("HumanoidRootPart").CFrame
+		end)
+		Connection = plr.CharacterAdded:Connect(function(c)
+			repeat task.wait()until c and c:FindFirstChild("HumanoidRootPart")
+			if States.AutoRespawn then
+				MoveTo(SavedPos)
+				Connection:Disconnect()
+			end
+		end)
+	end
+	refresh = function()
+		local c= nil
+		local Saved = CurrentPos()
+		GetHumanoid():ChangeState(15)
+		c = plr.CharacterAdded:Connect(function(a)
+			repeat task.wait()until a and a:FindFirstChild("HumanoidRootPart")
+			for i=1,30 do
+				a:FindFirstChild("HumanoidRootPart").CFrame = Saved
+			end
+			task.wait()
+			a:FindFirstChild("HumanoidRootPart").CFrame = Saved
+			c:Disconnect()
+		end)
+	end
+	Btools = function()
+		local DestroyTool = Instance.new("Tool",plr:FindFirstChildOfClass("Backpack"))
+		local CloneTool = Instance.new("Tool",plr:FindFirstChildOfClass("Backpack"))
+		local DragTool = Instance.new("Tool",plr:FindFirstChildOfClass("Backpack"))
+		DestroyTool.Name = "Destroy"
+		DestroyTool.RequiresHandle =false
+		CloneTool.Name = "Clone"
+		CloneTool.RequiresHandle =false
+		DragTool.Name = "Drag"
+		DragTool.RequiresHandle =false
+		Mouse.Button1Up:Connect(function()
+			if Mouse.Target and IsAPart(Mouse.Target) then
+				if DestroyTool and DestroyTool.Parent ==char then
+					local a = Instance.new("Explosion",workspace)
+					a.Visible=true
+					a.Position = Mouse.Target.Position
+					a.Name=math.random()
+					Mouse.Target:Destroy()
+				end
+				if CloneTool and CloneTool.Parent ==char then
+					local Gotpart = Mouse.Target
+					local Part = Gotpart:Clone()
+					Part.Parent = Gotpart.Parent
+					Part.CFrame = CFrame.new(Mouse.Hit.Position)
+				end
+			else
+				return
+			end
+		end)
+		task.spawn(function()
+			while wait(.1) do
+				if unloaded then
+					break
+				end
+				if DragTool then
+					if States.MouseDown and  DragTool.Parent==char then
+						if Mouse.Target and IsAPart(Mouse.Target) then
+							local PartDrag = Mouse.Target
+							Mouse.Target.CFrame = Mouse.Hit
+						end
+					end
+				else
+					break
+				end
+			end
+		end)
+	end
+	TpTool = function()
+		local Tool = Instance.new("Tool",plr.Backpack)
+		Tool.Name = "TpTool"
+		Mouse.Button1Up:Connect(function()
+			if Tool and Tool.Parent then
+				if Tool.Parent == char then
+					MoveTo(CFrame.new(Mouse.Hit.Position+Vector3.new(0,2,0)))
+				end
+			else
+				return
+			end
+		end)
+	end
+	Fly = function(Enable,SpeedNew)
+		if Enable then
+			if Temp.FlyConnection then
+				return
+			end
+			Temp.FlyConnection= RunService.Heartbeat:Connect(function()
+				if true then
+					char:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(char:WaitForChild("HumanoidRootPart").Position, char:WaitForChild("HumanoidRootPart").Position + Vector3.new(Mouse.Hit.lookVector.x, Mouse.Hit.lookVector.Y, Mouse.Hit.lookVector.z))
+				end
+			end)
+
+			local Speed = tonumber(SpeedNew)/2 or .1
+			local Y = 1
+			local State = 8
+			local StartingPosition = plr.Character.PrimaryPart.CFrame
+
+			local Keys = {
+				w = false,
+				a = false,
+				s = false,
+				d = false,
+			}
+			local function MoveBy(a)
+				if not Temp.FlyConnection then
+					return
+				end
+				char.HumanoidRootPart.CFrame = char.HumanoidRootPart.CFrame *a
+			end
+			Mouse.KeyUp:Connect(function(Key)
+				if Key and Keys[Key:lower()] ~= nil and Temp.FlyConnection then
+					Keys[Key:lower()] = false
+				end
+			end)
+			Mouse.KeyDown:Connect(function(Key)
+				if Key and Keys[Key:lower()] ~= nil and Temp.FlyConnection then
+					Keys[Key:lower()] = true
+				end
+			end)
+
+			char.HumanoidRootPart.Changed:Connect(function()
+				if true and Temp.FlyConnection then
+					char.HumanoidRootPart.Velocity = Vector3.new(0,Y,0)
+				end
+			end)
+			RunService.RenderStepped:Connect(function()
+				if true and Temp.FlyConnection then
+					char.HumanoidRootPart.Velocity = Vector3.new(0,Y,0)
+					if Keys.w then
+						MoveBy(CFrame.new(0,0,-Speed))
+					end
+					if Keys.a then
+						MoveBy(CFrame.new(-Speed,0,0))
+					end
+					if Keys.s then
+						MoveBy(CFrame.new(0,0,Speed))
+					end
+					if Keys.d then
+						MoveBy(CFrame.new(Speed,0,0))
+					end
+				end
+			end)
+			task.spawn(function()
+				repeat wait(.4)
+					if unloaded then
+						break
+					end
+					pcall(function()
+						char:FindFirstChildOfClass("Humanoid").StateChanged:Connect(function()
+							if not Temp.FlyConnection then
+								return
+							end
+							char:FindFirstChildOfClass("Humanoid"):ChangeState(State)
+						end)
+						char:FindFirstChildOfClass("Humanoid"):ChangeState(State)
+					end)
+				until not Temp.FlyConnection
+			end)
+			local function rwait(a)
+				if true then
+					wait(a)
+				end
+			end
+			local function rwait2()
+				if true then
+					task.wait()
+				end
+			end
+			task.spawn(function()
+				repeat wait(1)
+					if unloaded then
+						break
+					end
+					if true and Temp.FlyConnection then
+						pcall(function()
+							State = 7--//Landed
+							rwait(.1)
+							State=8--//Running
+							rwait(1)
+							State = 3--//Jumping
+							rwait2()
+							State = 5--//Falling
+						end)
+					end
+				until not Temp.FlyConnection
+
+			end)
+			local function onInputBegan(input, _gameProcessed)
+				if input.KeyCode == Enum.KeyCode.Space then
+					Y = 20
+				end
+				if input.KeyCode == Enum.KeyCode.LeftShift then
+					Y = -20
+				end
+			end
+			local function onInputEnded(input, _gameProcessed)
+
+				if input.KeyCode == Enum.KeyCode.Space then
+					Y = 1
+				end
+				if input.KeyCode == Enum.KeyCode.LeftShift then
+					Y = 1
+				end
+			end
+			UserInputService.InputBegan:Connect(onInputBegan)
+
+			UserInputService.InputEnded:Connect(onInputEnded)
+
+		else
+			pcall(function()
+				Temp.FlyConnection:Disconnect()
+				Temp.FlyConnection=nil
+			end)
+			pcall(function()
+				wait(.1)
+				char:FindFirstChildOfClass("Humanoid"):ChangeState(18)
+				wait(.04)
+				char:FindFirstChildOfClass("Humanoid"):ChangeState(8)
+			end)
+		end
+
+	end
+	AddGui  =function(Gui)
+		TigerGuis[#TigerGuis+1]=Gui
+	end
+	GetArgs = function(Args)
+		return Args:split(" ")
+	end
+	Notif= function(Text,Time)
+		coroutine.wrap(function()
+			if not Time then
+				Time = 2.6
+			end
+			local function Tween(Obj,PropName,SetTo,Speed)
+				if not Speed then
+					Speed = .5
+				end
+				if not Obj then
+					return warn("Obj not found",2)
+				end
+				local tweenService = game:GetService("TweenService")
+				local tweeningInformation = TweenInfo.new (Speed, Enum.EasingStyle.Quart, Enum.EasingDirection.Out, 0, false, 0)
+
+				local partProperties ={
+					[PropName] = SetTo}
+
+
+				tweenService:Create(Obj,tweeningInformation,partProperties):Play()
+			end
+			local Notif = Instance.new("ScreenGui")
+			AddGui(Notif)
+			local Frame = Instance.new("Frame")
+			local Frame_2 = Instance.new("Frame")
+			local TextLabel = Instance.new("TextLabel")
+			local OldPos = nil
+			Notif.Name = math.random()
+			Notif.Parent = (game:GetService("CoreGui") or gethui())
+			Notif.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+			Frame.Parent = Notif
+			Frame.Position = UDim2.new(0,0,0,0)
+			Frame.BackgroundColor3 = Color3.fromRGB(27, 27, 27)
+			Frame.BorderSizePixel = 0
+			Frame.Position = UDim2.new(0, 0, 0.027431421, 0)
+			Frame.Size = UDim2.new(0, 327, 0, 100)
+			OldPos = Frame.Position
+			Frame_2.Parent = Frame
+			Frame_2.BackgroundColor3 = Color3.fromRGB(0, 254, 21)
+			Frame_2.BorderSizePixel = 0
+			Frame_2.Position = UDim2.new(0, 0, -0.00256858836, 0)
+			Frame_2.Size = UDim2.new(0, 6, 0, 100)
+
+			TextLabel.Parent = Frame
+			TextLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			TextLabel.BackgroundTransparency = 1.000
+			TextLabel.Position = UDim2.new(0.0397553556, 0, 0.120000005, 0)
+			TextLabel.Size = UDim2.new(0, 300, 0, 76)
+			TextLabel.Font = Enum.Font.SourceSansSemibold
+			TextLabel.Text = Text or "Text has not been set."
+			TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+			TextLabel.TextSize = 19.000
+			TextLabel.TextWrapped = true
+			for i,v in pairs(Notif:GetDescendants()) do v.Name = game:GetService("HttpService"):GenerateGUID(true) end
+			TextLabel.TextTransparency = 1
+			Frame.BackgroundTransparency = 1
+			Frame_2:TweenSize(UDim2.new(1, 0,1, 0),"Out","Quart",.5)
+			wait(.56)
+			Frame.BackgroundTransparency = 0
+			Frame_2:TweenSize(Frame_2.Size-UDim2.new(Frame_2.Size.X.Scale,0,0,0),"Out","Quart",.5)
+			wait(.5)
+			Tween(TextLabel,"TextTransparency",0)
+			wait(Time)
+			Tween(TextLabel,"TextTransparency",1)
+			Frame_2:TweenSize(UDim2.new(1, 0,1, 0),"Out","Quart",.5)
+			wait(.5)
+			Frame.BackgroundTransparency = 1
+			wait(.3)
+			Frame_2:TweenSize(Frame_2.Size-UDim2.new(Frame_2.Size.X.Scale,0,0,0),"Out","Quart",.5)
+			wait(.6)
+			Notif:Destroy()
+		end)()
+	end
+	if getgenv then
+		getgenv().TigerNot = Notif
+	end
+end
+ScreenGui.Parent = (game:GetService("CoreGui") or gethui())
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.Name = math.random()
+AddGui(ScreenGui)
+CmdBarFrame.Name = "CmdBarFrame"
+CmdBarFrame.Parent = ScreenGui
+CmdBarFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+CmdBarFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+CmdBarFrame.BackgroundTransparency = 1.000
+CmdBarFrame.BorderSizePixel = 0
+CmdBarFrame.Position = UDim2.new(0.5, 0, 0.899999998, 0)
+CmdBarFrame.Position = CmdBarFrame.Position+UDim2.new(0,0,1.1,0)
+CmdBarFrame.Size = UDim2.new(0, 577, 0, 65)
+
+UICorner.CornerRadius = UDim.new(0, 3)
+UICorner.Parent = CmdBarFrame
+
+Out.Name = "Out"
+Out.Parent = CmdBarFrame
+Out.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+Out.Position = UDim2.new(0.0200897697, 0, 0.022615375, 0)
+Out.Size = UDim2.new(0.974358976, 0, 0.945454538, 0)
+Out.Image = "rbxassetid://11789397066"
+Out.ImageTransparency = 0.240
+
+UICorner_2.CornerRadius = UDim.new(0, 6)
+UICorner_2.Parent = Out
+
+CommandBar.Name = "CommandBar"
+CommandBar.Parent = Out
+CommandBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+CommandBar.BackgroundTransparency = 1.000
+CommandBar.BorderSizePixel = 0
+CommandBar.Position = UDim2.new(0.0359953903, 0, 0.128254473, 0)
+CommandBar.Size = UDim2.new(0, 519, 0, 46)
+CommandBar.Font = Enum.Font.SourceSans
+CommandBar.PlaceholderColor3 = Color3.fromRGB(178, 178, 178)
+CommandBar.PlaceholderText = "Command bar"
+CommandBar.Text = ""
+CommandBar.TextColor3 = Color3.fromRGB(255, 255, 255)
+CommandBar.TextSize = 24.000
+CommandBar.TextTransparency = 0.140
+CommandBar.TextWrapped = true
+
+UIStroke.Parent = Out
+
+Commands.Name = "Commands"
+Commands.Parent = ScreenGui
+Commands.AnchorPoint = Vector2.new(0.5, 0.5)
+Commands.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+Commands.Position = UDim2.new(0.5, 0, 0.5, 0)
+Commands.Size = UDim2.new(0, 455, 0, 297)
+Commands.Image = "rbxassetid://12011977394"
+Commands.ImageTransparency = 0.200
+Commands.Visible = false
+
+UICorner_3.CornerRadius = UDim.new(0, 6)
+UICorner_3.Parent = Commands
+
+UIStroke_2.Parent = Commands
+
+CommandsList.Parent = Commands
+CommandsList.Active = true
+CommandsList.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+CommandsList.BackgroundTransparency = 1.000
+CommandsList.Position = UDim2.new(0, 0, 0.077441074, 0)
+CommandsList.Size = UDim2.new(0, 455, 0, 274)
+CommandsList.ScrollBarThickness = 5
+CommandsList.AutomaticCanvasSize="Y"
+UIListLayout.Parent = CommandsList
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout.Padding = UDim.new(0, 8)
+
+TEMP_CMD.Parent = game
+TEMP_CMD.BackgroundColor3 = Color3.fromRGB(62, 62, 62)
+TEMP_CMD.BackgroundTransparency = 0.750
+TEMP_CMD.Size = UDim2.new(0, 455, 0, 14)
+TEMP_CMD.Font = Enum.Font.SourceSans
+TEMP_CMD.Text = "sex"--//yes
+TEMP_CMD.TextColor3 = Color3.fromRGB(255, 255, 255)
+TEMP_CMD.TextSize = 14.000
+SavedCmdsPosition = Commands.Position
+do--Watermark
+	local Water = Instance.new("ScreenGui")
+	local TextLabel = Instance.new("TextLabel")
+	local UIGradient = Instance.new("UIGradient")
+	Water.Name = game:GetService("HttpService"):GenerateGUID(true)
+	Water.Parent = (game:GetService("CoreGui") or gethui())
+	Water.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+	TextLabel.Parent = Water
+	TextLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	TextLabel.BackgroundTransparency = 1.000
+	TextLabel.Position = UDim2.new(0.00658436213, 0, 0, 0)-UDim2.new(0,0,1,0)
+	TextLabel.Size = UDim2.new(0, 200, 0, 32)
+	TextLabel.Font = Enum.Font.Cartoon
+	TextLabel.Text = "Tiger-admin v0.1"
+	TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+	TextLabel.TextScaled = true
+	TextLabel.TextSize = 14.000
+	TextLabel.TextWrapped = true
+	TextLabel.TextXAlignment = Enum.TextXAlignment.Left
+	TextLabel:TweenPosition(UDim2.new(0.00658436213, 0, 0, 0),"Out","Quart",1)
+	AddGui(Water)
+	UIGradient.Color =ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(196, 8, 202)), ColorSequenceKeypoint.new(0.13, Color3.fromRGB(199, 15, 191)), ColorSequenceKeypoint.new(0.48, Color3.fromRGB(247, 127, 28)), ColorSequenceKeypoint.new(0.89, Color3.fromRGB(254, 7, 59)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(255, 2, 61))}
+	UIGradient.Parent = TextLabel
+	task.spawn(function()
+		while game do
+			task.wait()
+			UIGradient.Rotation +=.05
+		end
+	end)
+end
+do
+	--Load guis
+	game:GetService("ContentProvider"):PreloadAsync({
+		Commands,
+		Out,
+	})
+end
+
+for i,v in pairs(ScreenGui:GetDescendants()) do v.Name = game:GetService("HttpService"):GenerateGUID(true) end
+
+do--//AllCommands (Flesh of script)
+	Add_Command("cmds",function(Args)
+		local Args = GetArgs(Args)
+		if not Temp.CmdsC then
+			Temp.CmdsC = true
+			print(1)
+			if Commands.Visible == false then
+				Commands.Position = Commands.Position+UDim2.new(0,0,1,0)
+				wait(.1)
+				Commands:TweenPosition(SavedCmdsPosition,"Out","Quart",1)
+				Commands.Visible = true
+			else
+				Commands:TweenPosition(SavedCmdsPosition+UDim2.new(0,0,1,0),"Out","Quart",1)
+				wait(.5)
+				Commands.Visible = false
+			end
+			wait(.7)
+			Temp.CmdsC = false
+		end
+	end,"Shows commands gui")
+	Add_Command("unload",function(Args)
+		local Args = GetArgs(Args)
+		for i,v in pairs(Temp) do
+			if v then
+				if typeof(v) == "RBXScriptConnection" then
+					v:Disconnect()
+					Temp[i]= nil
+				elseif typeof(v):lower() == "boolean" then
+					v = false
+					Temp[i]= nil
+				else
+					Temp[i]= nil
+				end
+			end
+		end
+		for i,v in pairs(States) do
+			if v and typeof(v):lower()=="boolean" then
+				States[i]=false
+			else
+				States[i]=nil
+			end
+		end
+		Temp = {}
+		unloaded = true
+		for i,v in pairs(TigerGuis) do
+			if v then
+				task.spawn(function()
+					v:Destroy()
+				end)
+			end
+		end
+		Folder:Destroy()
+	end,"Deletes the whole script")
+	Add_Command("xray",function(Args)
+		local Args = GetArgs(Args)
+		Temp.Xray = {}
+		Notif("Please wait for xray")
+		for i, v in next, (workspace:GetDescendants()) do
+			if v and IsAPart(v) or v:IsA("Texture") or v:IsA("Decal") and v.Transparency <.99 then
+				if v.Transparency ~= 1 then
+					Temp.Xray[#Temp.Xray+1]= {
+						Part = v,
+						OldTransparency = v.Transparency
+					}
+					if v.Parent and not FindPlayer(v.Parent.Name) then
+						v.Transparency = 0.4
+					else
+						if v.Parent and not FindPlayer(v.Parent.Name) then
+							v.Transparency = 0.4
+						end
+					end
+				end
+			end
+
+		end
+	end,"See though parts")
+	Add_Command("unxray",function(Args)
+		local Args = GetArgs(Args)
+		if Temp.Xray then
+			for i,v in pairs(Temp.Xray) do
+				if v then
+					v.Part.Transparency = v.OldTransparency
+				end
+			end
+		end
+	end,"Disables xray")
+	Add_Command("rj",function(Args)
+		local Args = GetArgs(Args)
+		Notif("Rejoining server...")
+		wait(.6)
+		if #game:GetService("Players"):GetPlayers() ==1 then
+			game:GetService("Players").LocalPlayer:Kick("Please wait.")
+			game:GetService("TeleportService"):Teleport(game.PlaceId, game:GetService("Players").LocalPlayer)
+		else
+			game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId, game:GetService("Players").LocalPlayer)
+		end
+	end,"Rejoins the server",true)
+	Add_Command("follow",function(Args)
+		local Args = GetArgs(Args)
+
+
+		if Args[2] then
+			local cd =false
+			local Player = FindPlayer(Args[2])
+			if Player then
+				task.spawn(function()
+					while RunService.RenderStepped:Wait() do
+						if Temp.STOPFOLLOW ~=nil then
+							break
+						end
+						Temp.Points = true
+						task.spawn(function()
+							local Part = Player.Character:FindFirstChild("HumanoidRootPart") or Player.Character:FindFirstChildOfClass("Part") or Player.Character:FindFirstChildOfClass("MeshPart")
+							if Part then
+								local Got = FollowMove(Part.Position)
+
+							end
+						end)
+						wait(.1)
+						Temp.Points= false
+					end
+				end)
+			else
+				notfound()
+			end
+		else
+			Notif("You need to select a player! [ex: !goto player1]")
+		end
+	end,"Follows a player","PLAYER_COMMAND")
+	Add_Command("fling",function(Args)
+		local Args = GetArgs(Args)
+		States.NoClip = true
+		wait()
+		local Force = Instance.new("BodyThrust")
+		Force.Force = Vector3.new(5000,0,5000)
+		Force.Location = CurrentPos().Position
+		Force.Parent = char["HumanoidRootPart"]
+		Temp.Force = Force
+		Notif("Fling is now on")
+	end,"turns fling on")
+	Add_Command("pickuptools",function(Args)
+		local Args = GetArgs(Args)
+		local Tools = {}
+		for i,v in pairs(workspace:GetChildren()) do
+			if v and v:IsA("Tool") and v.CanBeDropped == true and v:FindFirstChild("Handle") then
+				Tools[#Tools+1]=v:FindFirstChild("Handle")
+			end
+		end
+		if #Tools ==0 then
+			Notif("No tools that are pickable are found")
+		end
+		for i,v in pairs(Tools) do
+			Touch(v)
+		end
+		Notif("Picked up every tool!")
+	end,"Picks up any tools that are on the ground")
+	Add_Command("unfling",function(Args)
+		local Args = GetArgs(Args)
+		pcall(function()
+			Temp.Force:Destroy()
+			Temp.Force=nil
+		end)
+		Notif("Fling is now off")
+	end,"turns fling off")
+	Add_Command("invisible",function(Args)
+		local Args = GetArgs(Args)
+		local OldCharacter = game:GetService("Players").LocalPlayer.Character
+		OldCharacter.archivable =true
+		Temp.OldCharacter = OldCharacter
+		local NewCharacter = OldCharacter:Clone()
+		Temp.FakeCharacter = NewCharacter
+		NewCharacter.Parent = OldCharacter.Parent
+		game:GetService("Players").LocalPlayer.Character = NewCharacter
+		OldCharacter:SetPrimaryPartCFrame(CFrame.new(0,999999999,999999))
+		wait()
+		OldCharacter:FindFirstChild("HumanoidRootPart").Anchored = true
+		NewCharacter:FindFirstChildOfClass("Humanoid").WalkSpeed = 30
+		workspace.CurrentCamera.CameraSubject = NewCharacter:FindFirstChildOfClass("Humanoid")
+		for i,v in pairs(NewCharacter:GetChildren()) do
+			if v and IsAPart(v) and v.Name ~="HumanoidRootPart" then
+				v.Transparency = .5
+			end
+		end
+		pcall(function()
+			NewCharacter:FindFirstChild("Animate").Disabled = true
+			NewCharacter:FindFirstChild("Animate").Disabled = false
+		end)
+		repeat task.wait() until OldCharacter:FindFirstChildOfClass("Humanoid").Health <1
+		Temp.OldCharacter:FindFirstChild("HumanoidRootPart").CFrame = Temp.FakeCharacter:FindFirstChild("HumanoidRootPart").CFrame
+		workspace.CurrentCamera.CameraSubject=Temp.OldCharacter:FindFirstChildOfClass("Humanoid")
+		plr.Character = Temp.OldCharacter
+		Temp.OldCharacter:FindFirstChild("HumanoidRootPart").Anchored = false
+		Temp.FakeCharacter:Destroy()
+	end,"No one can see you!")
+	Add_Command("visible",function(Args)
+		local Args = GetArgs(Args)
+		Temp.OldCharacter:FindFirstChild("HumanoidRootPart").CFrame = Temp.FakeCharacter:FindFirstChild("HumanoidRootPart").CFrame
+		workspace.CurrentCamera.CameraSubject=Temp.OldCharacter:FindFirstChildOfClass("Humanoid")
+		plr.Character = Temp.OldCharacter
+		Temp.OldCharacter:FindFirstChild("HumanoidRootPart").Anchored = false
+		Temp.FakeCharacter:Destroy()
+	end,"No one can see you!")
+	Add_Command("unfollow",function(Args)
+		local Args = GetArgs(Args)
+		Temp.STOPFOLLOW = true
+		wait(.1)
+		char:FindFirstChildOfClass("Humanoid"):MoveTo(CurrentPos().Position-Vector3.new(0,0,1.5))
+		wait(1)
+		Temp.STOPFOLLOW=false
+	end,"Stops following a player")
+	Add_Command("rejoin",function(Args)
+		local Args = GetArgs(Args)
+		Notif("Rejoining server...")
+		wait(.5)
+		if #game:GetService("Players"):GetPlayers() ==1 then
+			game:GetService("Players").LocalPlayer:Kick("Please wait.")
+			game:GetService("TeleportService"):Teleport(game.PlaceId, game:GetService("Players").LocalPlayer)
+		else
+			game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId, game:GetService("Players").LocalPlayer)
+		end
+	end,"Rejoins the server")
+	Add_Command("bang",function(Args)
+		local Args = GetArgs(Args)
+		if Args[2] then
+			local Target = FindPlayer(Args[2])
+			if Target then
+				local Animation= Instance.new("Animation")
+				Animation.AnimationId = "rbxassetid://148840371"
+				local loaded = GetHumanoid():LoadAnimation(Animation)
+				wait(.01)
+				loaded:Play()
+				if Args[3] and tonumber(Args[3]) then
+					loaded:AdjustSpeed(tonumber(Args[3]))
+				else
+					loaded:AdjustSpeed(4)
+				end
+				Temp.sex = RunService.Stepped:Connect(function()
+					pcall(function()
+						GetHumanoid().Sit = false
+						char:FindFirstChild("HumanoidRootPart").CFrame = Target.Character:FindFirstChild("HumanoidRootPart").CFrame *CFrame.new(0,0,1.2)
+					end)
+				end)
+			else
+				notfound()
+			end
+		else
+			Notif("You need to select a target! [!bang player]")
+		end
+	end,"sex","PLAYER_COMMAND")
+	Add_Command("unbang",function(Args)
+		local Args = GetArgs(Args)
+		pcall(function()
+			Temp.sex:Disconnect()
+		end)
+	end,"disables bang")
+	Add_Command("speed",function(Args)
+		pcall(function()
+			Temp.Speed:Disconnect()
+			Temp.Speed = nil
+		end)
+		local Args = GetArgs(Args)
+		if not Args[2] then
+			Notif("You need to put a number [ex: speed 100]")
+		else
+			local Speed =Args[2]
+			if not tonumber(Speed) then
+				Notif("You need to import a number! [ex: speed 100]")
+				return
+			end
+			if math.floor(Speed) == math.floor(NormalSpeed) then
+				pcall(function()
+					Temp.Speed:Disconnect()
+				end)
+				return
+			end
+			task.spawn(function()
+				local Keys = {
+					w = false,
+					a = false,
+					s = false,
+					d = false,
+				}
+				local function MoveBy(a)
+					if not Temp.Speed then
+						return
+					end
+					char.HumanoidRootPart.CFrame = char.HumanoidRootPart.CFrame *a
+				end
+				local Mouse = plr:GetMouse()
+				Mouse.KeyUp:Connect(function(Key)
+					if Key and Keys[Key:lower()] ~= nil and Temp.Speed then
+						Keys[Key:lower()] = false
+					end
+				end)
+				Mouse.KeyDown:Connect(function(Key)
+					if Key and Keys[Key:lower()] ~= nil and Temp.Speed then
+						Keys[Key:lower()] = true
+					end
+				end)
+				Temp.Speed = RunService.Stepped:Connect(function()
+					if not IsZoomedIn() then
+						if Keys.w then
+							MoveBy(CFrame.new(0,0,-Speed/60))
+						end
+						if Keys.s and GetHumanoid().AutoRotate then
+							MoveBy(CFrame.new(0,0,-Speed/60))
+						end
+					end
+					if IsZoomedIn() == true or char and char:FindFirstChildOfClass("Humanoid") or char:FindFirstChildOfClass("Humanoid").AutoRotate == false then
+						if Keys.a then
+							MoveBy(CFrame.new(-Speed/150,0,0))
+						end
+						if Keys.s then
+							MoveBy(CFrame.new(0,0,Speed/60))
+						end
+						if Keys.d then
+							MoveBy(CFrame.new(Speed/150,0,0))
+						end
+					end
+				end)
+			end)
+		end
+	end,"Sets your speed")
+	Add_Command("reach",function(Args)
+		local Args = GetArgs(Args)
+		if not Args[2] then
+			Notif("You need to put a number [ex: reach 100]")
+		else
+			local Size =Args[2]
+			if not tonumber(Size) then
+				Notif("You need to import a number! [ex: reach 100]")
+				return
+			end
+			local Tool = char:FindFirstChildOfClass("Tool")
+			if not Tool then
+				Notif("You need to be holding a tool!")
+			else
+				if Tool:FindFirstChild("Handle") then
+					Tool.Handle.Massless = true
+					Tool.Handle.Size = Vector3.new(Tool.Handle.Size.X,Tool.Handle.Size.Y,Size)
+					local Box = Instance.new("SelectionBox",Tool.Handle)
+					Box.Adornee = Tool.Handle
+					Box.Transparency = .7
+					Box.Color3 = Color3.new(1, 0, 0.0156863)
+					Box.LineThickness = .02
+
+				else
+					Notif("Invalid tool handle needed!")
+				end
+			end
+		end
+	end,"sets your tools reach")
+	Add_Command("jump",function(Args)
+		local Args = GetArgs(Args)
+		if not Args[2] then
+			Notif("You need to put a number [ex: jump 100]")
+		else
+			local Jump =Args[2]
+			if not tonumber(Jump) then
+				Notif("You need to import a number! [ex: jump 100]")
+				return
+			end
+			Temp.JumpPower = Args[2]
+		end
+	end,"Sets how high you jump")
+	Add_Command("setspawnpoint",function(Args)
+		local Args = GetArgs(Args)
+		Temp.SpawnPoint = CurrentPos()
+		Notif("Spawnpoint set as ".. tostring(CurrentPos().Position))
+	end,"Sets your current position as your spawnpoint")
+	Add_Command("resetspawnpoint",function(Args)
+		local Args = GetArgs(Args)
+		Temp.SpawnPoint=nil
+		Notif("Spawnpoint reset")
+	end,"Disables setspawnpoint (resets your spawnpoint)")
+	Add_Command("sit",function(Args)
+		local Args = GetArgs(Args)
+		GetHumanoid():ChangeState(Enum.HumanoidStateType.Seated)
+		GetHumanoid().Sit = true
+	end,"Most useless command ever")
+	Add_Command("light",function(Args)
+		local Args = GetArgs(Args)
+		local Light = Instance.new("PointLight",game:GetService("Players").LocalPlayer.Character.HumanoidRootPart)
+		Light.Enabled = true
+		Light.Color = Color3.new(1, 1, 1)
+		Light.Brightness = 4
+		Light.Range = 100
+		Light.Shadows = false
+	end,"Puts a light source in your character")
+	Add_Command("day",function(Args)
+		local Args = GetArgs(Args)
+		for i =1,30 do
+			task.wait()
+			game:GetService("Lighting").ClockTime = 14
+		end
+	end,"Makes it day time")
+	Add_Command("spam",function(Args)
+		local Args = GetArgs(Args)
+		local A_1 = tostring(Args[2])
+		local A_2 = "All"
+		local Event = game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest
+		Notif("Now spamming "..tostring(Args[2]))
+		while wait(math.random(2,2.7)) do
+			if Temp.Unspam then
+				break
+			end
+			Event:FireServer(A_1, A_2)
+		end
+	end,"Spam a message","STRING_COMMAND")
+	Add_Command("unspam",function(Args)
+		local Args = GetArgs(Args)
+		Temp.Unspam = true
+		wait(3)
+		Temp.Unspam = false
+	end,"Disables spam ")
+	Add_Command("night",function(Args)
+		local Args = GetArgs(Args)
+		game:GetService("Lighting").ClockTime = 0
+	end,"Makes it night")
+	Add_Command("fullbright",function(Args)
+		Temp.GlobalShadows=game:GetService("Lighting").GlobalShadows
+		Temp.FogEnd=game:GetService("Lighting").FogEnd
+		Temp.Brightness=game:GetService("Lighting").Brightness
+		Temp.Ambient=game:GetService("Lighting").Ambient
+		Temp.ClockTime=game:GetService("Lighting").ClockTime
+		game:GetService("Lighting").GlobalShadows = false
+		game:GetService("Lighting").FogEnd = 2^100
+		game:GetService("Lighting").Brightness = 3
+		game:GetService("Lighting").Ambient = Color3.new(0.760784, 0.760784, 0.760784)
+		game:GetService("Lighting").ClockTime= 11
+	end,"Lights up the map")
+	Add_Command("infjump",function(Args)
+		local cd = false
+		Temp.InfJump = game:GetService("UserInputService").InputBegan:connect(function(UserInput)
+			if UserInput.UserInputType == Enum.UserInputType.Keyboard and UserInput.KeyCode == Enum.KeyCode.Space then
+				if cd == false then
+					cd = true
+					game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState(3)
+					wait(.3)
+					game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState(8)
+					wait(.1)
+					cd = false
+				end
+			end
+		end)
+		Notif("Infjump on")
+	end,"spam space as fast as you can")
+	Add_Command("translator",function(Args)
+		Notif("Loading translator scripy by aim")
+		loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/H17S32/Tiger_Admin/main/Translator"))()
+	end,"Loads translator scripy by aim")
+	Add_Command("unfullbright",function(Args)
+		game:GetService("Lighting").GlobalShadows = Temp.GlobalShadows
+		game:GetService("Lighting").FogEnd = Temp.FogEnd
+		game:GetService("Lighting").Brightness = Temp.Brightness
+		game:GetService("Lighting").Ambient = Temp.Ambient
+		game:GetService("Lighting").ClockTime= Temp.ClockTime
+	end,"Disables !fullbright command")
+	Add_Command("noarms",function(Args)
+		local Args = GetArgs(Args)
+		for i,v in pairs(char:GetChildren()) do
+			if v and IsAPart(v) and string.find(v.Name:lower(),"arm")then
+				v:Destroy()
+			end
+		end
+	end,"Removes your arms")
+	Add_Command("nohats",function(Args)
+		local Args = GetArgs(Args)
+		GetHumanoid():RemoveAccessories()
+	end,"Removes your hats")
+	Add_Command("blockhats",function(Args)
+		local Args = GetArgs(Args)
+		for i,v in pairs(char:GetChildren()) do
+			if v and v:IsA("Accessory") or v:IsA("Hat") and v:FindFirstChild("Handle") and v:FindFirstChild("Handle"):FindFirstChildOfClass("SpecialMesh") then
+				v:FindFirstChild("Handle"):FindFirstChildOfClass("SpecialMesh"):Destroy()
+			end
+		end
+	end,"Makes your hats a block")
+	Add_Command("nolegs",function(Args)
+		local Args = GetArgs(Args)
+		for i,v in pairs(char:GetChildren()) do
+			if v and IsAPart(v) and string.find(v.Name:lower(),"leg") then
+				v:Destroy()
+			end
+		end
+	end,"Removes your legs")
+	Add_Command("fov",function(Args)
+		local Args = GetArgs(Args)
+		if not Args[2] or not tonumber(Args[2]) then
+			Notif("You need to set fov as a number! [ex:fov 100]")
+		else
+			workspace.CurrentCamera.FieldOfView = tonumber(Args[2])
+		end
+	end,"Sets your camera fov","NUMBER_COMMAND")
+	Add_Command("ragdoll",function(Args)
+		local OldGrav = workspace.Gravity
+		local Args = GetArgs(Args)
+		GetHumanoid():ChangeState(Enum.HumanoidStateType.Seated)
+		GetHumanoid().Sit = true
+		workspace.Gravity = 0.0001
+		repeat task.wait() until not char or not GetHumanoid() or GetHumanoid().Sit == false
+		workspace.Gravity = OldGrav
+	end,"Very smooth make someone touch you!")
+	Add_Command("jumppower",function(Args)
+		local Args = GetArgs(Args)
+		Notif("Did you mean !jump?")
+	end,"Sets how high you jump",true)
+	Add_Command("kill",function(Args)
+		local Args = GetArgs(Args)
+		if Args[2] then
+			local Player = FindPlayer(Args[2])
+			if Player then
+				Notif("killing "..Player.Name.."...")
+				Bring(Player,nil,1)
+			else
+				notfound()
+			end
+		else
+			Notif("You need to select a player! [ex: !bring player1]")
+		end
+	end,"Brings a player to you [TOOL NEEDED]","PLAYER_COMMAND")
+	Add_Command("bring",function(Args)
+		local Args = GetArgs(Args)
+		if Args[2] then
+			local Player = FindPlayer(Args[2])
+			if Player then
+				Notif("bringing "..Player.Name.."...")
+				Bring(Player)
+			else
+				notfound()
+			end
+		else
+			Notif("You need to select a player! [ex: !bring player1]")
+		end
+	end,"Brings a player to you [TOOL NEEDED]","PLAYER_COMMAND")
+	Add_Command("loopgoto",function(Args)
+		local Args = GetArgs(Args)
+		if Args[2] then
+			local Player = FindPlayer(Args[2])
+			if Player then
+				pcall(function()
+					Temp.lgoto:Disconnect()
+				end)
+				local Part2 = nil
+				local function Create()--//why not
+					pcall(function()
+						Part2:Destroy()
+					end)
+					Part2 = Instance.new("Part",workspace)
+					Part2.Anchored = true
+					Part2.Size = Vector3.new(4,1.5,4)
+					Part2.Name = math.random()
+					Part2.Transparency = 1
+					Part2.CanCollide = true
+					Part2.CanTouch = false
+					Temp.TpPart = Part2
+					local a = Instance.new("BoxHandleAdornment",Part2)
+					a.Adornee = Part2
+					a.CFrame = Part2.CFrame
+					a.Size = Vector3.new(4,1.5,4)
+					a.Visible = true
+					a.Color3 = Color3.new(1, 1, 1)
+					a.Transparency = .8
+					a.ZIndex = 10
+					a.AlwaysOnTop = true
+				end
+				Create()
+				Temp.lgoto = game:GetService("RunService").RenderStepped:Connect(function()
+					local Part = Player.Character:FindFirstChild("HumanoidRootPart") or Player.Character:FindFirstChildOfClass("Part") or Player.Character:FindFirstChildOfClass("MeshPart")
+					pcall(function()
+						char:SetPrimaryPartCFrame(Player.Character:GetPrimaryPartCFrame()*CFrame.new(0,0,2))
+						GetHumanoid().Sit = false
+						Part2.CFrame = CurrentPos()*CFrame.new(0,-3.7,0)
+					end)
+				end)
+			else
+				notfound()
+			end
+		else
+			Notif("You need to select a player! [ex: !goto player1]")
+		end
+	end,"Loop teleports to a player","PLAYER_COMMAND")
+	Add_Command("unloopgoto",function(Args)
+		local Args = GetArgs(Args)
+		pcall(function()
+			Temp.lgoto:Disconnect()
+			Temp.lgoto=nil
+			Temp.TpPart:Destroy()
+			Temp.TpPart=nil
+		end)
+	end,"Stops loop teleporting to a player")
+	Add_Command("goto",function(Args)
+		local Args = GetArgs(Args)
+		if Args[2] then
+			local Player = FindPlayer(Args[2])
+			if Player then
+				local Part = Player.Character:FindFirstChildOfClass("Part") or Player.Character:FindFirstChildOfClass("MeshPart")
+				MoveTo(Part.CFrame)
+			else
+				notfound()
+			end
+		else
+			Notif("You need to select a player! [ex: !goto player1]")
+		end
+	end,"Sets how high you jump","PLAYER_COMMAND")
+	Add_Command("serverhop",function(Args)
+		local Args = GetArgs(Args)
+		Notif("Changing servers...")
+		local Ids = {}
+		for _, v in ipairs(game:GetService("HttpService"):JSONDecode(game:HttpGetAsync("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100")).data) do
+			if typeof(v) == "table" and v['maxPlayers'] > v['playing'] and v['id'] ~= game['JobId'] then
+				table.insert(Ids,v.id)
+			end
+		end
+		return game:GetService("TeleportService"):TeleportToPlaceInstance(game['PlaceId'], Ids[math.random(1, #Ids)])
+	end,"Hops to another server")
+	Add_Command("fly",function(Args)
+		local Args = GetArgs(Args)
+		local Speed = Args[2]
+		if Args[2] and tonumber(Args[2]) then
+			Speed =tonumber(Args[2])
+		else
+			Speed = nil
+		end
+		Notif("Fly has been enabled!")
+		pcall(function()
+			Temp.FlyConnection:Disconnect()
+			Temp.FlyConnection=nil
+		end)
+		Fly(false)
+		wait()
+		Fly(true,Speed)
+	end,"Fly like a bird!")
+
+	Add_Command("unfly",function(Args)
+		local Args = GetArgs(Args)
+		pcall(function()
+			Temp.FlyConnection:Disconnect()
+			Temp.FlyConnection=nil
+		end)
+		Fly(false)
+		Notif("Fly has been disabled!")
+	end,"Disabled !fly command")
+	Add_Command("esp",function(Args)
+		local Args = GetArgs(Args)
+		if workspace:FindFirstChild("HIGHLIGHTS_1000") then
+			return 
+		end
+		local Group = Instance.new("Model",workspace)
+		Group.Name = "HIGHLIGHTS_1000"
+		local esp =Instance.new("Highlight",Group)
+		esp.FillColor = BrickColor.White().Color
+		Temp.ESP = esp
+		local function EspToggle(v)
+			task.spawn(function()
+				pcall(function()
+					if v.Character and v.Character:FindFirstChild("Head") and not v.Character:FindFirstChild("Head"):FindFirstChild("123123123123") then
+						local v1 = Instance.new("BillboardGui",v.Character:FindFirstChild("Head"))
+						local v2 = Instance.new("TextLabel",v1)
+						Temp.Esps[#Temp.Esps+1]=v1
+						Temp.Esps[#Temp.Esps+1]=v2
+						v1.Adornee = v.Character.Head
+						v1.Name = "123123123123"
+						v1.Size = UDim2.new(0, 100, 0, 150)
+						v1.StudsOffset = Vector3.new(0, 2, 0)
+						v1.AlwaysOnTop = true
+						v2.BackgroundTransparency = 1
+						v2.TextColor3 = Color3.new(1, 1, 1)
+						v2.TextStrokeTransparency = 0
+						v2.TextYAlignment = Enum.TextYAlignment.Bottom
+						v2.Position = UDim2.new(0, 0, 0, -50)
+						v2.Size = UDim2.new(0, 120, 0, 120)
+						v2.Font = Enum.Font.SourceSans
+						v2.TextSize = 15
+						v2.Text = v.Name
+						v.Character.Parent = Group
+					end
+				end)
+			end)
+		end
+		Temp.EspConnection= game:GetService("RunService").Heartbeat:Connect(function()
+			task.spawn(function()
+				for i,v in pairs(game:GetService("Players"):GetPlayers()) do
+					if v and v~= game:GetService("Players").LocalPlayer then
+						repeat task.wait()until v.Character and v.Character:FindFirstChild("Head")
+						EspToggle(v)
+					end
+				end
+			end)
+		end)
+	end,"See where every player is")
+	Add_Command("unesp",function(Args)
+		local Args = GetArgs(Args)
+		if workspace:FindFirstChild("HIGHLIGHTS_1000") then
+			pcall(function()
+				Temp.EspConnection:Disconnect()
+				Temp.EspConnection = nil
+			end)
+			wait(.1)
+			for i,v in pairs(workspace.HIGHLIGHTS_1000:GetChildren()) do
+				v.Parent = workspace
+			end
+			Temp.ESP:Destroy()
+			for i =1,2 do
+				for i,v in pairs(Temp.Esps) do
+					if v then
+						v:Destroy()
+						Temp.Esps[i]=nil
+					end
+				end
+				wait(.7)
+			end
+			workspace.HIGHLIGHTS_1000:Destroy()
+		end
+	end,"Disables !esp command")
+	Add_Command("tptool",function(Args)
+		local Args = GetArgs(Args)
+		TpTool()
+	end,"Teleport with a tool")
+	Add_Command("allcmds",function(Args)
+		local Args = GetArgs(Args)
+		Notif("Tiger admin has "..tostring(CommandsGot).." commands!")
+	end,"Tells you how much commands tiger admin has")
+	Add_Command("setwaypoint",function(Args)
+		local Args = GetArgs(Args)
+		if not Args[2] then
+			Notif("You need a name for a waypoint [ex: setwaypoint waypoint1]")
+		else
+			local Pos = CurrentPos()
+			Temp.Waypoints[#Temp.Waypoints+1]={
+				Name = tostring(Args[2]):lower(),
+				Position = Pos
+			}
+			Notif("Waypoint has been created as: "..tostring(Args[2]))
+			task.spawn(function()
+				pcall(function()
+					local part = Instance.new("Part",workspace)
+					part.Shape = "Ball"
+					part.CFrame = Pos
+					part.Anchored = true
+					part.Transparency = 1
+					part.Size = Vector3.new(1,1,1)
+					local v = Instance.new("BoxHandleAdornment",part)
+					v.Name = plr.Name
+					v.AlwaysOnTop = true
+					v.Size = part.Size
+					v.Transparency = 0.3
+					v.Adornee = part
+					v.Color = BrickColor.White()
+					local BillboardGui = Instance.new("BillboardGui",part)
+					local TextLabel= Instance.new("TextLabel")
+					BillboardGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+					BillboardGui.Active = true
+					BillboardGui.ExtentsOffset = Vector3.new(0,3,0)
+					BillboardGui.AlwaysOnTop = true
+					BillboardGui.Size = UDim2.new(0, 80, 0, 40)
+					TextLabel.Parent = BillboardGui
+					TextLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+					TextLabel.BackgroundTransparency = 1.000
+					TextLabel.Size = UDim2.new(1, 0, 1, 0)
+					TextLabel.TextScaled =true
+					TextLabel.Font = Enum.Font.SourceSansLight
+					TextLabel.Text = "Waypoint: "..tostring(Args[2]):lower()
+					TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+					TextLabel.TextSize = 33.000
+					TextLabel.TextStrokeTransparency = 0.000
+					TextLabel.TextWrapped = true
+				end)
+			end)
+		end
+	end,"Creates a waypoint that you can teleport to")
+	Add_Command("towaypoint",function(Args)
+		local Args = GetArgs(Args)
+		if not Args[2] then
+			Notif("You need a name [ex: towaypoint waypoint1]")
+		else
+			Temp.Waypoints[#Temp.Waypoints+1]={
+				Name = tostring(Args[2]):lower(),
+				Position = CurrentPos()
+			}
+			local got = false
+			for i,v in pairs(Temp.Waypoints) do
+				if v then
+					if v.Name:lower() == Args[2]:lower() then
+						MoveTo(v.Position)
+						got = true
+						break
+					end
+				end
+			end
+			if got == false then
+				Notif("Waypoint not found!")
+			end
+		end
+	end,"Teleports to a waypoint")
+	Add_Command("autorespawn",function(Args)
+		local Args = GetArgs(Args)
+		if not Args[2] then
+			Notif("You need to toggle it with off/on [ex: autorespawn on]")
+		else
+			if Args[2] == "on" then
+				States.AutoRespawn = true
+				AutoRespawn()
+				Notif("Auto respawn is now on!")
+			elseif Args[2]=="off" then
+				States.AutoRespawn = false
+				Notif("Auto respawn is now off!")
+			end
+		end
+	end,"Respawn at your death point","TOGGLE_COMMAND")
+	Add_Command("swim",function(Args)
+		local Args = GetArgs(Args)
+		local Values = {
+			Enum.HumanoidStateType.FallingDown,
+			Enum.HumanoidStateType.Running,
+			Enum.HumanoidStateType.RunningNoPhysics,
+			Enum.HumanoidStateType.Climbing,
+			Enum.HumanoidStateType.StrafingNoPhysics,
+			Enum.HumanoidStateType.Ragdoll,
+			Enum.HumanoidStateType.GettingUp,
+			Enum.HumanoidStateType.Jumping,
+			Enum.HumanoidStateType.Landed,
+			Enum.HumanoidStateType.Flying,
+			Enum.HumanoidStateType.Freefall,
+			Enum.HumanoidStateType.Seated,
+			Enum.HumanoidStateType.PlatformStanding,
+			Enum.HumanoidStateType.Dead,
+			Enum.HumanoidStateType.Swimming,
+			Enum.HumanoidStateType.Physics,
+			Enum.HumanoidStateType.None,
+		}
+		Temp.OldGrav = workspace.Gravity
+		workspace.Gravity=0.0001
+		for i,v in pairs(Values) do
+			plr.Character:FindFirstChildOfClass("Humanoid"):SetStateEnabled(v, false)
+		end
+		plr.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Swimming)
+		Temp.SwimConnection = RunService.RenderStepped:Connect(function()
+			if plr.Character and plr.Character:FindFirstChildOfClass("Humanoid") then
+				if plr.Character:FindFirstChildOfClass("Humanoid").MoveDirection.Magnitude>0 then
+					plr.Character:FindFirstChild("HumanoidRootPart").Anchored = false
+				else
+					plr.Character:FindFirstChild("HumanoidRootPart").Anchored = true
+				end
+			end
+		end)
+	end,"Swim in air!")
+	Add_Command("unswim",function(Args)
+		local Args = GetArgs(Args)
+		local Values = {
+			Enum.HumanoidStateType.FallingDown,
+			Enum.HumanoidStateType.Running,
+			Enum.HumanoidStateType.RunningNoPhysics,
+			Enum.HumanoidStateType.Climbing,
+			Enum.HumanoidStateType.StrafingNoPhysics,
+			Enum.HumanoidStateType.Ragdoll,
+			Enum.HumanoidStateType.GettingUp,
+			Enum.HumanoidStateType.Jumping,
+			Enum.HumanoidStateType.Landed,
+			Enum.HumanoidStateType.Flying,
+			Enum.HumanoidStateType.Freefall,
+			Enum.HumanoidStateType.Seated,
+			Enum.HumanoidStateType.PlatformStanding,
+			Enum.HumanoidStateType.Dead,
+			Enum.HumanoidStateType.Swimming,
+			Enum.HumanoidStateType.Physics,
+			Enum.HumanoidStateType.None,
+		}
+		workspace.Gravity=Temp.OldGrav
+		for i,v in pairs(Values) do
+			plr.Character:FindFirstChildOfClass("Humanoid"):SetStateEnabled(v, true)
+		end
+		plr.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Running)
+		Temp.SwimConnection:Disconnect()
+		char:FindFirstChild("HumanoidRootPart").Anchored=false
+	end,"Disables !swim command")
+	Add_Command("refresh",function(Args)
+		local Args = GetArgs(Args)
+		pcall(function()
+			refresh()
+		end)
+		Notif("Refreshing your character please wait.")
+	end,"Refreshes your character at your last position")
+	Add_Command("reset",function(Args)
+		local Args = GetArgs(Args)
+		pcall(function()
+			char:FindFirstChildOfClass("Humanoid"):ChangeState(15)
+		end)
+	end,"Kills your character")
+	Add_Command("view",function(Args)
+		local Args = GetArgs(Args)
+		if Args[2] then
+			local Player = FindPlayer(Args[2])
+			if Player then
+				Temp.Viewing = Player
+				pcall(function()
+					workspace.CurrentCamera.CameraSubject = Temp.Viewing.Character:FindFirstChildOfClass("Humanoid")
+				end)
+			else
+				notfound()
+			end
+		else
+			Notif("You need to select a player! [ex: view player1]")
+		end
+	end,"Views a player","PLAYER_COMMAND")
+	Add_Command("copyposition",function(Args)
+		local Args = GetArgs(Args)
+		pcall(function()
+			local Copy = toclipboard or setclipboard  
+			Copy(tostring(CurrentPos()))
+			Notif("Copied position to your clipboard!")
+		end)
+	end,"Copys your characters position")
+	Add_Command("unlockzoom",function(Args)
+		local Args = GetArgs(Args)
+		plr.CameraMode = Enum.CameraMode.Classic
+		plr.CameraMaxZoomDistance = 2^100
+		Notif("Unlocked zoom")
+	end,"Unlocks zoom so you can zoom out in first person games")
+	Add_Command("antikick",function(Args)
+		local Args = GetArgs(Args)
+		if not hookfunction or not hookmetamethod or not getnamecallmethod  then
+			Notif("Your exploit does not support this you are missing functions!")
+		else
+			States.AntiKick = true
+			Temp.AntiKick1 = hookfunction(plr.Kick,function()
+				return wait(9e9)
+			end)
+			Notif("Anti-kick is not enabled on client scripts")
+		end
+
+	end,"Prevents localscripts from kicking you")
+	Add_Command("unview",function(Args)
+		local Args = GetArgs(Args)
+		Temp.Viewing=nil
+		pcall(function()
+			for i =1,10 do
+				task.wait()
+				workspace.CurrentCamera.CameraSubject = char:FindFirstChildOfClass("Humanoid")
+			end
+		end)
+	end,"Disables !view command")
+	Add_Command("noclip",function(Args)
+		local Args = GetArgs(Args)
+		States.NoClip = true
+		Notif("Noclip enabled!")
+	end,"Go though walls")
+	Add_Command("clip",function(Args)
+		local Args = GetArgs(Args)
+		States.NoClip = false
+		Notif("Noclip disabled!")
+	end,"Disabls !noclip")
+	Add_Command("hitbox",function(Args)
+		local Args = GetArgs(Args)
+		if Args[2]=="all" and Args[3] then
+			for i,v in pairs(game:GetService("Players"):GetPlayers()) do
+				if v and v.Character and v~=plr then
+					Temp.HitBoxes[#Temp.HitBoxes+1]={
+						NormalSize = v.Character:FindFirstChild("HumanoidRootPart").Size,
+						EditedSize = Vector3.new(Args[3],Args[3],Args[3]),
+						Player = v
+					}
+					v.Character:FindFirstChild("HumanoidRootPart").Size = Vector3.new(Args[3],Args[3],Args[3])
+					v.Character:FindFirstChild("HumanoidRootPart").CanCollide=false
+					v.Character:FindFirstChild("HumanoidRootPart").Transparency=0.6
+
+				end
+			end
+		else
+			if Args[2] then
+				if not Args[3] then
+					Notif("You need to put a size! [ex: hitbox player1 5]")
+				else
+					if tonumber(Args[3]) then
+						local Player = FindPlayer(Args[2])
+						if Player then
+							Temp.HitBoxes[#Temp.HitBoxes+1]={
+								NormalSize = Player.Character:FindFirstChild("HumanoidRootPart").Size,
+								EditedSize = Vector3.new(Args[3],Args[3],Args[3]),
+								Player = Player,
+							}
+							Player.Character:FindFirstChild("HumanoidRootPart").Size = Vector3.new(Args[3],Args[3],Args[3]) or Vector3.new(10,10,10)
+							Player.Character:FindFirstChild("HumanoidRootPart").CanCollide=false
+							local EspThing = Instance.new("BoxHandleAdornment",Player.Character:FindFirstChild("HumanoidRootPart"))
+							Player.Character:FindFirstChild("HumanoidRootPart").Transparency=0.6
+						else
+							notfound()
+						end
+					end
+				end
+			else
+				Notif("You need to select a player! [ex: hitbox player1 5]")
+			end
+		end
+	end,"Changes everyones or a single persons hitbox","PLAYER_COMMAND")
+	Add_Command("nohitbox",function(Args)
+		local Args = GetArgs(Args)
+		for i,v in pairs(Temp.HitBoxes) do
+			if v then
+				v.Player.Character:FindFirstChild("HumanoidRootPart").Size = v.NormalSize
+				v.Player.Character:FindFirstChild("HumanoidRootPart").Transparency=1
+				Temp.HitBoxes[i]=nil
+			end
+		end
+		Notif("HitBoxes reset!")
+	end,"Disables !hitbox command")
+	Add_Command("phase",function(Args)
+		local Args = GetArgs(Args)
+		if not Args[2] then
+			Notif("You need to put a number [ex: phase 5]")
+		else
+			local Speed =Args[2]
+			if not tonumber(Speed) then
+				Notif("You need to import a number! [ex: phase 5]")
+				return
+			end
+			pcall(function()
+				local Done = false
+				local Pos = char:FindFirstChild("HumanoidRootPart").CFrame*CFrame.new(0,Args[2],0)
+				task.spawn(function()
+					repeat task.wait()
+						char:FindFirstChild("HumanoidRootPart").CFrame=Pos
+					until Done
+				end)
+				char:FindFirstChild("HumanoidRootPart").Anchored=true
+				wait(.6)
+				char:FindFirstChild("HumanoidRootPart").Anchored=false
+				Done = true
+			end)
+		end
+	end,"Phases you an amount of studs up")
+	Add_Command("btools",function(Args)
+		local Args = GetArgs(Args)
+		Btools()
+	end,"Puts building tools in your backpack")
+	Add_Command("quit",function(Args)
+		local Args = GetArgs(Args)
+		plr:Kick("Shutdown")
+		game:ShutDown()
+	end,"quits the game for you")
+end
+
+
+Check_Prefix = function(TXT)
+	if TXT:sub(1, #Prefix) ~= Prefix then
+		return "Not"
+	end
+	return "Is"
+end
+CommandBar.FocusLost:Connect(function(IsEnter)
+	if IsEnter then
+		if unloaded then return end
+		if Check_Prefix(CommandBar.Text) == "Not" then
+			local TextGot = CommandBar.Text
+			CommandBar.Text = ""
+			Execute_Command(Prefix..TextGot:lower(),Prefix..TextGot:lower())
+
+		else
+			local TextGot = CommandBar.Text
+			CommandBar.Text = ""
+			Execute_Command(TextGot,TextGot)
+		end
+	end
+end)
+
+
+local Methods = {
+	"findfirstchild",
+	"findfirstchildofclass",
+	"findfirstchildwhichisa",
+	"findfirstancestor",
+	"findfirstdescendant",
+	"findfirstancestorofclass",
+	"findfirstancestorwhichisa",
+	"isa",
+}
+local CustomMethodsTable = {
+	"getchildren",
+	"getdescendants",
+}
+if hookfunction and hookmetamethod and getnamecallmethod  then
+	Permanent.MainConnection = hookmetamethod(game, "__namecall", function(self, ...)
+		local Got  = getnamecallmethod():lower()
+		local Info = {...}
+		if Got:lower() == "kick" and self == plr and States.AntiKick then
+			return wait(9e9)
+		end
+		if Got:lower() == "destroy" and self == plr and States.AntiKick then
+			return wait(9e9)
+		end
+		if table.find(Methods,Got) then
+			local InstanceGot = Permanent.MainConnection(self, ...)
+			if table.find(Protected,InstanceGot) then
+				return nil
+			end
+		end
+		if table.find(CustomMethodsTable,Got) then
+			local InstanceGot = Permanent.MainConnection(self, ...)
+			local EditedTable = InstanceGot
+			for i,v in pairs(EditedTable) do
+				if v and table.find(Protected,v) then
+					EditedTable[i]=nil
+				end
+			end
+			return EditedTable
+		end
+		return Permanent.MainConnection(self, ...)
+	end)
+
+end
+UIS.InputBegan:connect(function(UserInput,Typing)
+	if unloaded then
+		return
+	end
+	if UserInput.UserInputType == Enum.UserInputType.MouseButton1 then
+		States.MouseDown  =true
+	end
+	if UserInput.KeyCode == Enum.KeyCode.Semicolon and not Typing then
+		task.wait(.03)
+		CommandBar:CaptureFocus()
+	end
+	if UserInput.UserInputType == Enum.UserInputType.Keyboard and UserInput.KeyCode == Enum.KeyCode.Space then
+		if Temp.JumpPower and Temp.JumpCoolDown == false and not Typing then
+			Temp.JumpCoolDown = true
+			game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState(3)
+			for i =1,30 do
+				pcall(function()
+					plr.Character.HumanoidRootPart.CFrame = plr.Character.HumanoidRootPart.CFrame *CFrame.new(0,Temp.JumpPower/100,0)
+					task.wait()
+				end)
+			end
+			repeat task.wait()until char:FindFirstChildOfClass("Humanoid") and char:FindFirstChildOfClass("Humanoid"):GetState() == Enum.HumanoidStateType.Landed
+			Temp.JumpCoolDown = false
+		end
+	end
+end)
+UIS.InputEnded:connect(function(UserInput,Typing)
+	if UserInput.UserInputType == Enum.UserInputType.MouseButton1 then
+		States.MouseDown = false
+	end
+end)
+plr.CharacterAdded:Connect(function(NewChar) --//Just in case
+	Temp.JumpPower=nil
+	repeat task.wait()until NewChar
+	char = NewChar
+	if States.AutoRespawn then
+		AutoRespawn()
+	end
+	repeat task.wait() until NewChar:FindFirstChild("HumanoidRootPart")
+	if Temp.SpawnPoint~=nil then
+		for i =1,10 do
+			NewChar:FindFirstChild("HumanoidRootPart").CFrame = Temp.SpawnPoint
+			game:GetService("RunService").Stepped:Wait()
+		end
+
+	end
+end)
+task.spawn(function()
+	while wait(1) do--//Slow while loop
+		if unloaded then
+			break
+		end
+		pcall(function()
+			if Temp.Viewing then
+				pcall(function()
+					workspace.CurrentCamera.CameraSubject = Temp.Viewing.Character:FindFirstChildOfClass("Humanoid")
+				end)
+			else
+				Temp.Viewing=nil
+			end
+		end)
+		for i,v in pairs(TigerGuis) do--//Clean up guis
+			if not v or not v.Parent then
+				TigerGuis[i]=nil
+			end
+		end
+		for i,v in pairs(Temp.HitBoxes) do
+			if v and v.Player  then
+				pcall(function()
+					v.Player.Character:FindFirstChild("HumanoidRootPart").Size = v.EditedSize
+					v.Player.Character:FindFirstChild("HumanoidRootPart").CanCollide=false
+					v.Player.Character:FindFirstChild("HumanoidRootPart").Transparency=0.6
+				end)
+			else
+				Temp.HitBoxes[i]=nil
+			end
+		end
+	end
+end)
+RunService.Stepped:Connect(function()
+	if unloaded then
+		return
+	end
+	if States.NoClip then
+		for i,v in pairs(char:GetDescendants()) do
+			if v and IsAPart(v) then
+				v.CanCollide=false
+			end
+		end
+	end
+end)
+plr.Chatted:Connect(function(c)
+	if c then
+		if unloaded then return end
+		c = c:lower()
+		Execute_Command(c,c)
+	end
+end)
+CmdBarFrame:TweenPosition(UDim2.new(0.5, 0, 0.899999998, 0),"Out","Back",.5)
