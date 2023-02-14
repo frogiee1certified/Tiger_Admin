@@ -1404,7 +1404,7 @@ task.spawn(function()
 		end)
 	end
 end)
-
+refresh()
 plr.PlayerGui.Home.fadeFrame.Visible = false--//black bar
 CmdBarFrame:TweenPosition(UDim2.new(0.5, 0, 0.899999998, 0),"Out","Back",.5)
 
