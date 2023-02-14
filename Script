@@ -52,6 +52,7 @@ do
 	States = {
 		autore = true,
 		Killaura = false,
+		SilentAim= false
 	}
 	Whitelisted = {}
 end
@@ -882,6 +883,10 @@ do
 		local Args = GetArgs(Args)
 		Toggle(Args[2],"autore")
 	end,"",true)
+	Add_Command("silentaim",function(Args)
+		local Args = GetArgs(Args)
+		Toggle(Args[2],"SilentAim")
+	end,"",true)
 	Add_Command("guard",function(Args)
 		local Args = GetArgs(Args)
 		local pos = getpos()
@@ -1443,7 +1448,96 @@ do--Take over client scripts and anticrash
 		WarnGui.Frame.LocalScript.Disabled = false
 	end)
 end
---//NoCollide
+task.spawn(function()
+	local RawMetatable = getrawmetatable(game)
+	local __NameCall = RawMetatable.__namecall
+	local __Index = RawMetatable.__index
+	local LocalPlayer = game.Players.LocalPlayer
+	setreadonly(RawMetatable, false)
+	local Services = {
+		Players = game:GetService("Players"),
+		UserInputService = game:GetService("UserInputService")
+	}
+	local Camera = workspace.CurrentCamera
+	local function NotObstructing(Destination, Ancestor)
+		local ObstructingParts = Camera.GetPartsObscuringTarget(Camera, {Destination}, {Ancestor, LocalPlayer.Character})
+
+		for i,v in ipairs(ObstructingParts) do
+			pcall(function()
+				if v.Transparency >= 1 then
+					table.remove(ObstructingParts, i)
+				end
+			end)
+		end
+
+		if #ObstructingParts <= 0 then
+			return true
+		end
+		local RaycastParameters = RaycastParams.new()
+		RaycastParameters.IgnoreWater = true
+		RaycastParameters.FilterType = Enum.RaycastFilterType.Blacklist
+		RaycastParameters.FilterDescendantsInstances = {LocalPlayer.Character}
+
+		RaycastParameters.FilterDescendantsInstances = {LocalPlayer.Character}
+
+		local Origin = Camera.CFrame.Position
+		local Direction = (Destination - Origin).Unit * 500
+		local RayResult = workspace.Raycast(workspace, Origin, Direction, RaycastParameters) or {
+			Instance = nil;
+			Position = Origin + Direction;
+			Material = Enum.Material.Air;
+		}
+
+		if RayResult.Instance and (RayResult.Instance.IsDescendantOf(RayResult.Instance, Ancestor) or RayResult.Instance == Ancestor) then
+			return true
+		end
+		return false
+	end
+	local function ClosestPlayerToCursor(Distance)
+		local Closest = nil
+		local Position = nil
+		local ShortestDistance = Distance or math.huge
+
+		local MousePosition = Services.UserInputService.GetMouseLocation(Services.UserInputService)
+		for i, v in ipairs(Services.Players.GetPlayers(Services.Players)) do
+			if v ~= LocalPlayer and (v.Team ~= LocalPlayer.Team) and v.Character and v.Character:FindFirstChildOfClass("Humanoid") and v.Character:FindFirstChildOfClass("Humanoid").Health>0 then
+
+				if NotObstructing(v.Character.PrimaryPart.Position, v.Character) == false then
+					continue
+				end
+				local ViewportPosition, OnScreen = Camera.WorldToViewportPoint(Camera, v.Character.PrimaryPart.Position)
+				local Magnitude = (Vector2.new(ViewportPosition.X, ViewportPosition.Y) - MousePosition).Magnitude
+
+				if Magnitude < ShortestDistance  then
+					Closest = v
+					Position = ViewportPosition
+					ShortestDistance = Magnitude
+				end
+			end
+		end
+
+		return Closest, Position
+	end
+
+	RawMetatable.__index = newcclosure(function(Self, Index)
+		if States.SilentAim and checkcaller() == false then
+			if typeof(Self) == "Instance" and (Self:IsA("PlayerMouse") or Self:IsA("Mouse")) then
+				if Index == "Hit" then
+					local Closest = ClosestPlayerToCursor(120)
+					if Closest then
+						local Velocity = Closest.Character.PrimaryPart.AssemblyLinearVelocity
+						local Prediction = Velocity.Unit
+						if Velocity.Magnitude == 0 then
+							Prediction = Vector3.new(0, 0, 0)
+						end
+						return CFrame.new(Closest.Character.Head.Position + Prediction)
+					end
+				end
+			end
+		end
+		return __Index(Self, Index)
+	end)
+end)
 do
 	Temp.AntiFling = game:GetService("RunService").Stepped:Connect(function()
 		if not unloaded then
