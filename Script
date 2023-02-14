@@ -54,7 +54,10 @@ do
 		autore = true,
 		Killaura = false,
 		SilentAim= false,
+		AntiTase = false,
 		Antibring = true,
+		AutoItems = false,
+		AntiArrest = false
 	}
 	Whitelisted = {}
 end
@@ -705,6 +708,7 @@ do
 				MoveToJunk(crimpad)
 			end
 			refresh(Last)
+			plr.CharacterAdded:Wait():WaitForChild("HumanoidRootPart").CFrame = Last
 			Done = true
 			task.spawn(function()
 				wait(.4)
@@ -718,10 +722,6 @@ do
 			end)
 			if pos then
 				wait(.1)
-			end
-			if lastteam ~= game.Teams.Guards then
-				local ohString1 = "Bright orange"
-				workspace.Remote.TeamEvent:FireServer(ohString1)
 			end
 			return
 		end
@@ -891,6 +891,36 @@ do
 		local Args = GetArgs(Args)
 		Toggle(Args[2],"autore")
 	end,"Respawns at death position")
+	Add_Command("autoitems",function(Args)
+		local Args = GetArgs(Args)
+		Toggle(Args[2],"AutoItems")
+	end,"Get guns at respawn")
+	Add_Command("antiarrest",function(Args)
+		local Args = GetArgs(Args)
+		Toggle(Args[2],"AntiArrest")
+		if States.AntiArrest then
+			for i,v in pairs(getconnections(workspace:WaitForChild("Remote").arrestPlayer.OnClientEvent)) do
+				v:Disable()
+			end
+		else
+			for i,v in pairs(getconnections(workspace:WaitForChild("Remote").arrestPlayer.OnClientEvent)) do
+				v:Enable()
+			end
+		end
+	end,"Trys to prevent arresting")
+	Add_Command("antitase",function(Args)
+		local Args = GetArgs(Args)
+		Toggle(Args[2],"AntiTase")
+		if States.AntiTase then
+			for i,v in pairs(getconnections(workspace:WaitForChild("Remote").tazePlayer.OnClientEvent)) do
+				v:Disable()
+			end
+		else
+			for i,v in pairs(getconnections(workspace:WaitForChild("Remote").tazePlayer.OnClientEvent)) do
+				v:Enable()
+			end
+		end
+	end,"Trys to prevent tasing")
 	Add_Command("autore",function(Args)
 		local Args = GetArgs(Args)
 		Toggle(Args[2],"autore")
@@ -908,7 +938,7 @@ do
 		local pos = getpos()
 		local ohString1 = "Bright blue"
 		workspace.Remote.TeamEvent:FireServer(ohString1)
-		wait()
+		wait(.1)
 		MoveTo(pos)
 	end,"puts you into guards team")
 	Add_Command("crashserver",function(Args)
@@ -961,7 +991,7 @@ do
 		local pos = getpos()
 		local ohString1 = "Bright orange"
 		workspace.Remote.TeamEvent:FireServer(ohString1)
-		wait()
+		wait(.1)
 		MoveTo(pos)
 	end,"puts you into guards team")
 	Add_Command("noinvite",function(Args)
@@ -1345,10 +1375,12 @@ end
 plr.CharacterAdded:Connect(function(char)
 	if unloaded then return end
 	task.spawn(function()
-		--//Autorespawn
+		--//AutoItems
+		--//Antibring
 		if States.Antibring then
 			char.ChildAdded:Connect(function(a)
-				if a and a:IsA("Tool") and not table.find(Whitelisted_ITEMS,a) and not unloaded then
+				if unloaded then return end
+				if a and a:IsA("Tool") and not table.find(Whitelisted_ITEMS,a) and not a:FindFirstChild("ISWHITELISTED") and not unloaded then
 					plr.Character:FindFirstChild("HumanoidRootPart").Anchored = true
 					a:Destroy()
 					task.wait()
@@ -1357,15 +1389,47 @@ plr.CharacterAdded:Connect(function(char)
 				end
 			end)
 		end
+		--//Autorespawn
 		if States.autore then
 			repeat task.wait() until char and char:FindFirstChildOfClass("Humanoid")
 			char:FindFirstChildOfClass("Humanoid").BreakJointsOnDeath = false
 			char:FindFirstChildOfClass("Humanoid").Died:Connect(function()
+				if unloaded then return end
 				refresh()
 			end)
 		end
+		repeat task.wait() until char and char:FindFirstChildOfClass("Humanoid")
+		task.spawn(function()
+			if unloaded then return end
+			wait(.6)
+			if States.AutoItems then
+				All_Guns()
+			end
+		end)
+		--//Anti annoying falling thing
+		task.spawn(function()
+			if unloaded then return end
+			char:FindFirstChildOfClass("Humanoid").StateChanged:Connect(function(_,a)
+				if a == Enum.HumanoidStateType.FallingDown then
+					game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState(2)
+				end
+			end)
+		end)
+		--//Anti "arrest"
+		task.spawn(function()
+			plr.Character:FindFirstChild("Head").ChildAdded:Connect(function(a)
+				if a and a:IsA("BillboardGui") and States.AntiArrest then
+					refresh()
+				end
+			end)
+		end)
 	end)
+	for i,v in pairs(plr.Backpack:GetChildren()) do
+		Whitelisted_ITEMS[#Whitelisted_ITEMS+1]=v
+		Instance.new("BoolValue",v).Name = "ISWHITELISTED"
+	end
 end)
+
 task.spawn(function()
 	local Vests = function(player)
 		if not player or not player.Character then
@@ -1382,6 +1446,15 @@ task.spawn(function()
 	while wait(.1) do
 		--//Slow loop
 		if unloaded then break end
+		for i,v in pairs(plr.Backpack:GetChildren()) do
+			Whitelisted_ITEMS[#Whitelisted_ITEMS+1]=v
+			Instance.new("BoolValue",v).Name = "ISWHITELISTED"
+		end
+		for i,v in pairs(Whitelisted_ITEMS) do
+			if not v or v and v.Parent == nil then
+				Whitelisted_ITEMS[i]=nil
+			end
+		end
 		game:GetService('StarterGui'):SetCoreGuiEnabled('Backpack', true)
 		for i,v in pairs(game:GetService("Players"):GetPlayers()) do
 			local ves= Vests(v)
@@ -1601,17 +1674,35 @@ do
 		end
 	end)
 end
-
+plr.Backpack.ChildAdded:Connect(function(v)
+	if v and v:IsA("Tool") then
+		if v and v:IsA("Tool") and not table.find(Whitelisted_ITEMS,v) then
+			Whitelisted_ITEMS[#Whitelisted_ITEMS+1]=v
+			Instance.new("BoolValue",v).Name = "ISWHITELISTED"
+		end
+	end
+end)
 task.spawn(function()
 	while task.wait() do
-		for i,v in pairs(plr.Backpack:GetChildren()) do
-			if v and v:IsA("Tool") and not table.find(Whitelisted_ITEMS,v) then
-				Whitelisted_ITEMS[#Whitelisted_ITEMS+1]=v
+		pcall(function()
+			if States.AntiArrest == true and unloaded == false then
+				for i,v in pairs(game.Players:GetPlayers()) do
+					if v ~= game.Players.LocalPlayer then
+						if (v.Character.HumanoidRootPart.Position - plr.Character.HumanoidRootPart.Position).magnitude <14 and v.Character.Humanoid.Health >0 and v.Character:FindFirstChild("Handcuffs") then
+							local args = {
+								[1] = v
+							}
+							for i =1,13 do
+								task.spawn(function()
+									game:GetService("ReplicatedStorage").meleeEvent:FireServer(unpack(args))
+								end)
+							end
+
+						end
+					end
+				end
 			end
-			if not v or v.Parent == nil then
-				Whitelisted_ITEMS[i]=nil
-			end
-		end
+		end)
 		pcall(function()
 			if States.Killaura == true and unloaded == false then
 				for i,v in pairs(game.Players:GetPlayers()) do
