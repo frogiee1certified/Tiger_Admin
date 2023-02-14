@@ -57,7 +57,8 @@ do
 		AntiTase = false,
 		Antibring = true,
 		AutoItems = false,
-		AntiArrest = false
+		AntiArrest = false,
+		Admined = {},
 	}
 	Whitelisted = {}
 end
@@ -89,6 +90,11 @@ task.spawn(function()
 		wait(.4)
 	end
 end)
+function Msg(player,Text)
+	local ohString1 = "/w "..player.Name.." "..Text
+	local ohString2 = "All"
+	game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(ohString1, ohString2)
+end
 local http = game:GetService("HttpService")
 if writefile and isfile then
 	if isfile("Tiger.Admin") == false then
@@ -675,6 +681,7 @@ do
 					Instance.new("Humanoid",plr.Character)
 				end)
 			end
+			Temp.SMOOTHEN = player
 			repeat task.wait()
 				pcall(function()
 					plr.Character:FindFirstChildOfClass("Humanoid"):EquipTool(Handcuffs)
@@ -712,6 +719,7 @@ do
 
 					if Extra and Extra == true and Extra ~="crim" then
 					else
+						Temp.SMOOTHEN = nil
 						return bring(player,Goto,Type,true)
 					end
 				end
@@ -719,6 +727,7 @@ do
 			if pos then
 				wait(.1)
 			end
+			Temp.SMOOTHEN = nil
 			return
 		end
 	end
@@ -862,6 +871,27 @@ do
 		end
 		return game:GetService("TeleportService"):TeleportToPlaceInstance(game['PlaceId'], Ids[math.random(1, #Ids)])
 	end,"Unloads everything")
+	Add_Command("admin",function(Args)
+		local Args = GetArgs(Args)
+		local r =FindPlayer(Args[2])
+		if r then
+			States.Admined[#States.Admined+1]=r.Name
+			Notif("Admined "..r.Name)
+			Msg(r,"You have been admined say !cmds to get started!")
+		else
+			NotFound()
+		end
+	end,"Admins a player")
+	Add_Command("unadmin",function(Args)
+		local Args = GetArgs(Args)
+		local r = Args[2]
+		if States.Admined and r then
+			table.remove(States.Admined,table.find(States.Admined,r.Name))
+			Notif("Unadmined "..r.Name)
+		else
+			NotFound()
+		end
+	end,"Admins a player")
 	Add_Command("bring",function(Args)
 		local Args = GetArgs(Args)
 		if Args[2] == "all" then
@@ -1662,24 +1692,20 @@ end)
 do
 	Temp.AntiFling = game:GetService("RunService").Stepped:Connect(function()
 		if not unloaded then
-			pcall(function()
-				for i,v in pairs(game:GetService("Players"):GetPlayers()) do
-					if v ~= plr then
-						if v.Character then
-							for i,v in pairs(v.Character:GetChildren()) do
-								if v:IsA("BasePart") then
-									v.CanCollide = false
-								end
-								if v:IsA("Accessory") then
-									pcall(function()
-										v.Handle.CanCollide = false
-									end)
-								end
-							end 
-						end
-					end
+			return
+		end
+		if Temp.SMOOTHEN then
+			local v = Temp.SMOOTHEN
+			for i,v in pairs(v.Character:GetChildren()) do
+				if v:IsA("BasePart") then
+					v.CanCollide = false
 				end
-			end)
+				if v:IsA("Accessory") then
+					pcall(function()
+						v.Handle.CanCollide = false
+					end)
+				end
+			end 
 		end
 	end)
 end
@@ -1762,6 +1788,73 @@ task.spawn(function()
 				})
 			end
 		end
+	end
+end)
+
+---//poop skid fr
+local Arg1_P=""
+local function commandPLAYER(G)
+	if Arg1_P == Prefix..G then
+		return true
+	else
+		return false
+	end
+end
+
+function AdminChatted(Text,Speaker)
+	Speaker = game:GetService("Players"):FindFirstChild(Speaker)
+	if unloaded then return end
+	local bM = string.lower(Text)
+	local bN = bM:split(" ")
+	Arg1_P = bN[1]
+	local CmdsList = "!bring player, !cmds, !criminal player, !goto player"
+	local Arg2_P = bN[2]
+	local Arg3_P = bN[3]
+	local Arg4_P = bN[4]
+	if commandPLAYER("bring") then
+		local r = FindPlayer(Arg2_P)
+		if r then
+			if r.Character:FindFirstChildOfClass("Humanoid") and r.Character:FindFirstChildOfClass("Humanoid").Health <1 then
+				Msg(Speaker,"Player is dead please try again.")
+				return
+			end
+			bring(r,Speaker.Character:GetPrimaryPartCFrame()*CFrame.new(0,5,0))
+		else
+			Msg(Speaker,"Player not found!")
+			NotFound()
+		end
+	end
+	if commandPLAYER("criminal") then
+		local r = FindPlayer(Arg2_P)
+		if r then
+			if r.Character:FindFirstChildOfClass("Humanoid") and r.Character:FindFirstChildOfClass("Humanoid").Health <1 then
+				Msg(Speaker,"Player is dead please try again.")
+				return
+			end
+			bring(r,r.Character:GetPrimaryPartCFrame()*CFrame.new(0,1,0),nil,"crim")
+		else
+			Msg(Speaker,"Player not found!")
+			NotFound()
+		end
+	end
+	if commandPLAYER("goto") then
+		local r = FindPlayer(Arg2_P)
+		if r then
+			bring(Speaker,r.Character:GetPrimaryPartCFrame()*CFrame.new(0,1,0),nil,"crim")
+		else
+			Msg(Speaker,"Player not found!")
+			NotFound()
+		end
+	end
+	if commandPLAYER("cmds") then
+		Msg(Speaker,CmdsList)
+	end
+end
+local DefaultChatSystemChatEvents = game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents
+DefaultChatSystemChatEvents.OnMessageDoneFiltering.OnClientEvent:Connect(function(MessageData, ChannelName)
+	if unloaded then return end
+	if table.find(States.Admined,MessageData.FromSpeaker)  then
+		AdminChatted(MessageData.Message,MessageData.FromSpeaker)
 	end
 end)
 refresh()
