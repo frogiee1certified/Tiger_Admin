@@ -556,29 +556,23 @@ do
 		end
 	end
 	function MKILL(target,doe)
-		if target and target.Character and target.Character:FindFirstChild("Humanoid") then
-		else
+		if not target or not target.Character or not target.Character:FindFirstChild("Humanoid") or target.Character:FindFirstChildOfClass("Forcefield")  then
 			return
 		end
 		local saved = getpos()
 		game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = target.Character:FindFirstChild("Head").CFrame
-		wait(.09)
-		task.spawn(function()
-			for i =1,13 do
-				task.spawn(function()
-					if not target.Character:FindFirstChildOfClass("ForceField") and target.Character:FindFirstChild("Humanoid").Health >1 then
-						game.ReplicatedStorage["meleeEvent"]:FireServer(target)
-					else
-						return
-					end
-				end)
-			end
-		end)
-		wait()
-		game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = saved
-		if target.Character:FindFirstChild("Humanoid").Health >1 and not doe then
-			MKILL(target)
+		wait(.2)
+		for i =1,10 do
+			task.spawn(function()
+				game.ReplicatedStorage["meleeEvent"]:FireServer(target)
+			end)
 		end
+		wait(.1)
+		if target.Character:FindFirstChild("Humanoid").Health >1 then
+			MKILL(target,doe)
+			return
+		end
+		MoveTo(saved)
 	end
 	function Kill_All(Team)
 		local saved = getpos()
