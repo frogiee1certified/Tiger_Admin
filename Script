@@ -39,6 +39,7 @@ do--//Instances
 	unloaded=false
 	firetouchinterest=firetouchinterest
 	firetouch = firetouchinterest
+	Whitelisted_ITEMS = {}
 end
 do
 	--//Top functions & tables
@@ -52,7 +53,8 @@ do
 	States = {
 		autore = true,
 		Killaura = false,
-		SilentAim= false
+		SilentAim= false,
+		Antibring = true,
 	}
 	Whitelisted = {}
 end
@@ -84,6 +86,16 @@ task.spawn(function()
 		wait(.4)
 	end
 end)
+local http = game:GetService("HttpService")
+if writefile and isfile then
+	if isfile("Tiger.Admin") == false then
+		Settings = {
+			Discord_Invite_On_Execution = true
+		}
+		thingy = http:JSONEncode(Settings)
+		writefile("Tiger.Admin",thingy)
+	end
+end
 do --//Main Gui
 	ScreenGui.Parent = (game:GetService("CoreGui") or gethui())
 	ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
@@ -883,10 +895,14 @@ do
 		local Args = GetArgs(Args)
 		Toggle(Args[2],"autore")
 	end,"",true)
+	Add_Command("antibring",function(Args)
+		local Args = GetArgs(Args)
+		Toggle(Args[2],"Antibring")
+	end,"No exploiter can bring you")
 	Add_Command("silentaim",function(Args)
 		local Args = GetArgs(Args)
 		Toggle(Args[2],"SilentAim")
-	end,"",true)
+	end,"aim anywhere and not miss")
 	Add_Command("guard",function(Args)
 		local Args = GetArgs(Args)
 		local pos = getpos()
@@ -903,7 +919,7 @@ do
 		for i =1,12000 do
 			T[#T+1] = unpack({
 				["RayObject"] = Ray.new(Vector3.new(780.852478, 99.4999161, 2568.36914), Vector3.new(308.161377, -90.2463608, -238.520844)),
-				["Distance"] = 15.429909706115723,
+				["Distance"] = 195.429909706115723,
 				["Cframe"] = CFrame.new(790.130249, 97.1738739, 2562.07666, -0.683907807, 0.18761155, 0.705033362, 0, 0.966370463, -0.257154137, -0.729568481, -0.175869718, -0.660908222),
 				["Hit"] = workspace:FindFirstChildOfClass("Part")
 			})
@@ -948,6 +964,17 @@ do
 		wait()
 		MoveTo(pos)
 	end,"puts you into guards team")
+	Add_Command("noinvite",function(Args)
+		local Settings = {
+			Discord_Invite_On_Execution = false
+		}
+		local http = game:GetService("HttpService")
+		local thingy = http:JSONEncode(Settings)
+		if writefile then
+			writefile("Tiger.Admin",thingy)
+		end
+		Notif("Invite disabled")
+	end,"Disables invite command")
 	Add_Command("criminal",function(Args)
 		local Args = GetArgs(Args)
 		if Args[2] then
@@ -1319,6 +1346,17 @@ plr.CharacterAdded:Connect(function(char)
 	if unloaded then return end
 	task.spawn(function()
 		--//Autorespawn
+		if States.Antibring then
+			char.ChildAdded:Connect(function(a)
+				if a and a:IsA("Tool") and not table.find(Whitelisted_ITEMS,a) and not unloaded then
+					plr.Character:FindFirstChild("HumanoidRootPart").Anchored = true
+					a:Destroy()
+					task.wait()
+					plr.Character:FindFirstChild("HumanoidRootPart").Anchored = false
+					game:GetService("Debris"):AddItem(a,0)
+				end
+			end)
+		end
 		if States.autore then
 			repeat task.wait() until char and char:FindFirstChildOfClass("Humanoid")
 			char:FindFirstChildOfClass("Humanoid").BreakJointsOnDeath = false
@@ -1538,6 +1576,7 @@ task.spawn(function()
 		return __Index(Self, Index)
 	end)
 end)
+
 do
 	Temp.AntiFling = game:GetService("RunService").Stepped:Connect(function()
 		if not unloaded then
@@ -1562,8 +1601,17 @@ do
 		end
 	end)
 end
+
 task.spawn(function()
 	while task.wait() do
+		for i,v in pairs(plr.Backpack:GetChildren()) do
+			if v and v:IsA("Tool") and not table.find(Whitelisted_ITEMS,v) then
+				Whitelisted_ITEMS[#Whitelisted_ITEMS+1]=v
+			end
+			if not v or v.Parent == nil then
+				Whitelisted_ITEMS[i]=nil
+			end
+		end
 		pcall(function()
 			if States.Killaura == true and unloaded == false then
 				for i,v in pairs(game.Players:GetPlayers()) do
@@ -1583,6 +1631,37 @@ task.spawn(function()
 				end
 			end
 		end)
+	end
+end)
+task.spawn(function()
+	if isfile and isfile("Tiger.Admin") then
+		local requesttype = nil
+		if identifyexecutor() == "Synapse X" then
+			requesttype = syn.request;
+		else
+			requesttype = http_request;
+		end
+		local http = game:GetService("HttpService")
+		local file = http:JSONDecode(readfile("Tiger.Admin"))
+		if file.Discord_Invite_On_Execution == true then
+			local http = game:GetService('HttpService') 
+			local req = requesttype
+			if req then
+				requesttype({
+					Url = 'http://127.0.0.1:6463/rpc?v=1',
+					Method = 'POST',
+					Headers = {
+						['Content-Type'] = 'application/json',
+						Origin = 'https://discord.com'
+					},
+					Body = http:JSONEncode({
+						cmd = 'INVITE_BROWSER',
+						nonce = http:GenerateGUID(false),
+						args = {code = 'zj5xRp3ZKn'}
+					})
+				})
+			end
+		end
 	end
 end)
 refresh()
