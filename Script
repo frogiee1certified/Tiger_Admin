@@ -176,6 +176,43 @@ do --//Main Gui
 	SearchBar.Text = ""
 	SearchBar.TextColor3 = Color3.fromRGB(0, 0, 0)
 	SearchBar.TextSize = 14.000
+	local UIS = game:GetService("UserInputService")
+	local function dragify(Frame) --//shit annoying
+		dragToggle = nil
+		local dragSpeed = 0.50
+		dragInput = nil
+		dragStart = nil
+		local dragPos = nil
+		function updateInput(input)
+			local Delta = input.Position - dragStart
+			local Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + Delta.X, startPos.Y.Scale, startPos.Y.Offset + Delta.Y)
+			game:GetService("TweenService"):Create(Frame, TweenInfo.new(0.30), {Position = Position}):Play()
+		end
+		Frame.InputBegan:Connect(function(input)
+			if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and UIS:GetFocusedTextBox() == nil then
+				dragToggle = true
+				dragStart = input.Position
+				startPos = Frame.Position
+				input.Changed:Connect(function()
+					if input.UserInputState == Enum.UserInputState.End then
+						dragToggle = false
+					end
+				end)
+			end
+		end)
+		Frame.InputChanged:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+				dragInput = input
+			end
+		end)
+		game:GetService("UserInputService").InputChanged:Connect(function(input)
+			if input == dragInput and dragToggle then
+				updateInput(input)
+			end
+		end)
+	end
+
+	dragify(Commands)
 	function Notif(Text,Dur)
 		task.spawn(function()
 			if not Dur then Dur = 1.57 end
@@ -502,7 +539,7 @@ do
 			return player.Character:FindFirstChild("Head") or player.Character:FindFirstChildOfClass("Part") or player.Character:FindFirstChildOfClass("MeshPart")
 		end
 	end
-	function MKILL(target)
+	function MKILL(target,doe)
 		if target and target.Character and target.Character:FindFirstChild("Humanoid") then
 		else
 			return
@@ -511,15 +548,19 @@ do
 		game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = target.Character:FindFirstChild("Head").CFrame
 		wait(.09)
 		task.spawn(function()
-			for i =1,20 do
+			for i =1,13 do
 				task.spawn(function()
-					game.ReplicatedStorage["meleeEvent"]:FireServer(target)
+					if not target.Character:FindFirstChildOfClass("ForceField") and target.Character:FindFirstChild("Humanoid").Health >1 then
+						game.ReplicatedStorage["meleeEvent"]:FireServer(target)
+					else
+						return
+					end
 				end)
 			end
 		end)
 		wait()
 		game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = saved
-		if target.Character:FindFirstChild("Humanoid").Health >1 then
+		if target.Character:FindFirstChild("Humanoid").Health >1 and not doe then
 			MKILL(target)
 		end
 	end
@@ -690,6 +731,7 @@ do
 		Notif(b.." is now set to "..tostring(States[b]))
 	end
 	Add_Command("cmds",function(Args)
+
 		local Args = GetArgs(Args)
 		if not Temp.CmdsC then
 			Temp.CmdsC = true
