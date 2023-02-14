@@ -555,11 +555,13 @@ do
 			return player.Character:FindFirstChild("Head") or player.Character:FindFirstChildOfClass("Part") or player.Character:FindFirstChildOfClass("MeshPart")
 		end
 	end
-	function MKILL(target,doe)
-		if not target or not target.Character or not target.Character:FindFirstChild("Humanoid") or target.Character:FindFirstChildOfClass("Forcefield")  then
+	function MKILL(target,STOP,P)
+		if not STOP then STOP =1 end
+		if not target or not target.Character or not target.Character:FindFirstChild("Humanoid") or target.Character:FindFirstChildOfClass("ForceField")  then
 			return
 		end
 		local saved = getpos()
+		if not P then P = saved else saved = P end
 		game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = target.Character:FindFirstChild("Head").CFrame
 		wait(.2)
 		for i =1,10 do
@@ -568,8 +570,8 @@ do
 			end)
 		end
 		wait(.1)
-		if target.Character:FindFirstChild("Humanoid").Health >1 then
-			MKILL(target,doe)
+		if target.Character:FindFirstChild("Humanoid").Health >1 and STOP ~=3 then
+			MKILL(target,STOP+1,P)
 			return
 		end
 		MoveTo(saved)
