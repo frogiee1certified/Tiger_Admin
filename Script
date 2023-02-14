@@ -887,6 +887,15 @@ do
 			end
 		end
 	end,"Brings a player to you","PLAYER_COMMAND")
+	Add_Command("goto",function(Args)
+		local Args = GetArgs(Args)
+		local r = FindPlayer(Args[2])
+		if r then
+			MoveTo(r.Character["Head"].CFrame)
+		else
+			NotFound()
+		end
+	end,"Respawns at death position")
 	Add_Command("autorespawn",function(Args)
 		local Args = GetArgs(Args)
 		Toggle(Args[2],"autore")
@@ -1446,26 +1455,30 @@ task.spawn(function()
 	while wait(.1) do
 		--//Slow loop
 		if unloaded then break end
-		for i,v in pairs(plr.Backpack:GetChildren()) do
-			Whitelisted_ITEMS[#Whitelisted_ITEMS+1]=v
-			Instance.new("BoolValue",v).Name = "ISWHITELISTED"
-		end
-		for i,v in pairs(Whitelisted_ITEMS) do
-			if not v or v and v.Parent == nil then
-				Whitelisted_ITEMS[i]=nil
+		pcall(function()
+			for i,v in pairs(plr.Backpack:GetChildren()) do
+				if v and not v:FindFirstChildOfClass("BoolValue") then
+					Whitelisted_ITEMS[#Whitelisted_ITEMS+1]=v
+					Instance.new("BoolValue",v).Name = "ISWHITELISTED"
+				end
 			end
-		end
-		game:GetService('StarterGui'):SetCoreGuiEnabled('Backpack', true)
-		for i,v in pairs(game:GetService("Players"):GetPlayers()) do
-			local ves= Vests(v)
-			if ves>1 then
-				repeat game:GetService("RunService").Stepped:Wait()
-					pcall(function()
-						v.Character:FindFirstChild("vest"):Destroy()
-					end)
-				until Vests(v) <2
+			for i,v in pairs(Whitelisted_ITEMS) do
+				if not v or v and v.Parent == nil then
+					Whitelisted_ITEMS[i]=nil
+				end
 			end
-		end
+			game:GetService('StarterGui'):SetCoreGuiEnabled('Backpack', true)
+			for i,v in pairs(game:GetService("Players"):GetPlayers()) do
+				local ves= Vests(v)
+				if ves>1 then
+					repeat game:GetService("RunService").Stepped:Wait()
+						pcall(function()
+							v.Character:FindFirstChild("vest"):Destroy()
+						end)
+					until Vests(v) <2
+				end
+			end
+		end)
 	end
 end)
 do--Take over client scripts and anticrash
