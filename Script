@@ -8,7 +8,6 @@
     Created by H17S3
     --CREDITS
 ]]
-
 repeat task.wait() until game:IsLoaded()
 do--//Instances
 	BETA = true
@@ -440,6 +439,7 @@ end
 do
 	--//Prison life stuff functions
 	HasGamepass = false
+
 	function unsit()
 		plr.Character:FindFirstChildOfClass("Humanoid").Sit = false
 	end
@@ -923,28 +923,6 @@ do
 			Notif("Missing arg2 !kill player")
 		end
 	end,"kills a player","PLAYER_COMMAND")
-	Add_Command("arrest",function(Args)
-		local Args = GetArgs(Args)
-		local lastt = plr.Team
-		local ohString1 = "Bright blue"
-		workspace.Remote.TeamEvent:FireServer(ohString1)
-		repeat task.wait() until plr.Team == game.Teams.Guards
-		wait(.3)
-		if Args[2] == "all" then
-			for i,v in pairs(game:GetService("Players"):GetPlayers()) do
-				if v and v ~= plr and v.Team ~= game.Teams.Guards and BadArea(v) or v.Team == game.Teams.Criminals then
-					arrest(v)
-				end
-			end
-		else
-			local r = FindPlayer(Args[2])
-			if r then
-				arrest(r)
-			else
-				NotFound()
-			end
-		end
-	end,"Unloads everything")
 	Add_Command("serverhop",function(Args)
 		local Args = GetArgs(Args)
 		local Ids = {}
@@ -997,6 +975,13 @@ do
 			end
 		end
 	end,"Brings a player to you","PLAYER_COMMAND")
+	Add_Command("speed",function(Args)
+		local Args = GetArgs(Args)
+		local r = Args[2]
+		if r and tonumber(r) then
+			plr.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = r
+		end
+	end,"Speed what else do you think")
 	Add_Command("goto",function(Args)
 		local Args = GetArgs(Args)
 		local r = FindPlayer(Args[2])
