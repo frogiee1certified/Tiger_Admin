@@ -69,7 +69,6 @@ for i,v in pairs(workspace["Criminals Spawn"]:GetChildren()) do
 		MoveToJunk(v)
 	end
 end
-
 task.spawn(function()
 	local FirePart =Instance.new("Part")
 	if not firetouchinterest then
