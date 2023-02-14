@@ -8,6 +8,7 @@
     Created by H17S3
     --CREDITS
 ]]
+
 repeat task.wait() until game:IsLoaded()
 do--//Instances
 	BETA = true
