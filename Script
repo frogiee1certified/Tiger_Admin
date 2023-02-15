@@ -34,12 +34,10 @@ do--//Instances
 	SearchBar = Instance.new("TextBox")
 	Folder.Name = "Tiger1.1Loaded"
 	--
-	Temp = {}
 	HasFireTouch = false
 	unloaded=false
 	firetouchinterest=firetouchinterest
 	firetouch = firetouchinterest
-	Whitelisted_ITEMS = {}
 end
 do
 	--//Top functions & tables
@@ -52,15 +50,21 @@ do
 	--Tables
 	States = {
 		autore = true,
-		Killaura = false,
+		KillAura = false,
 		SilentAim= false,
+		AntiPunch = false,
 		AntiTase = false,
+		FastPunch = false,
 		Antibring = true,
+		AntiTouch = false,
 		AutoItems = false,
 		AntiArrest = false,
 		Admined = {},
 	}
 	Whitelisted = {}
+	Parts = {}
+	Temp = {}
+	Whitelisted_ITEMS = {}
 end
 function MoveToJunk(v)
 	v.CFrame = CFrame.new(0,5^5,0)
@@ -590,6 +594,28 @@ do
 			return player.Character:FindFirstChild("Head") or player.Character:FindFirstChildOfClass("Part") or player.Character:FindFirstChildOfClass("MeshPart")
 		end
 	end
+	function CreateKillPart()
+		if Parts[1] then
+			pcall(function()
+				Parts[1]:Destroy()
+			end)
+			Parts[1] = nil
+		end
+		local Part = Instance.new("Part",plr.Character)
+		local hilight = Instance.new("Highlight",Part)
+		hilight.FillTransparency = 1
+
+		Part.Anchored = true
+		Part.CanCollide = false
+		Part.CanTouch = false
+		Part.Material = Enum.Material.SmoothPlastic
+		Part.Transparency = .98
+		Part.Material = Enum.Material.SmoothPlastic
+		Part.BrickColor = BrickColor.White()
+		Part.Size = Vector3.new(20,2,20)
+		Part.Name = "KillAura"
+		Parts[1] = Part
+	end
 	function MKILL(target,STOP,P)
 		if not STOP then STOP =1 end
 		if not target or not target.Character or not target.Character:FindFirstChild("Humanoid") or target.Character:FindFirstChildOfClass("ForceField")  then
@@ -613,7 +639,6 @@ do
 	end
 	function Kill_All(Team)
 		local saved = getpos()
-		States.Killaura = true
 		local Team = GetTeam()
 		for i,v in pairs(game:GetService("Players"):GetPlayers()) do
 			if v and v~= plr then
@@ -649,6 +674,26 @@ do
 	end
 	function getpos()
 		return plr.Character:FindFirstChild("HumanoidRootPart").CFrame
+	end
+	function AntiPunchC(v2)
+		pcall(function()
+			if v2 == plr then
+				return
+			end
+			v2.Character:FindFirstChildOfClass("Humanoid").AnimationPlayed:Connect(function(animationTrack)
+				if States.AntiPunch and not unloaded then
+					if animationTrack.Animation.AnimationId == "rbxassetid://484200742" or animationTrack.Animation.AnimationId =="rbxassetid://484926359" then
+						if (plr.Character.HumanoidRootPart.Position-v2.Character.HumanoidRootPart.Position).magnitude <3.5 then
+							for i =1,13 do
+								task.spawn(function()
+									game.ReplicatedStorage["meleeEvent"]:FireServer(v2)
+								end)
+							end
+						end
+					end
+				end
+			end)
+		end)
 	end
 	function arrest(Player,nex2)--//this is so old
 		local lastpos = getpos()
@@ -736,7 +781,6 @@ do
 					Instance.new("Humanoid",plr.Character)
 				end)
 			end
-			Temp.SMOOTHEN = player
 			repeat task.wait()
 				pcall(function()
 					plr.Character:FindFirstChildOfClass("Humanoid"):EquipTool(Handcuffs)
@@ -771,13 +815,8 @@ do
 			task.spawn(function()
 				wait(.4)
 				if (player.Character:FindFirstChild("HumanoidRootPart").Position-Goto.Position).Magnitude >6 then
-
 					if Extra and Extra == true and Extra ~="crim" then
 					else
-						task.spawn(function()
-							wait(.7)
-							Temp.SMOOTHEN = nil
-						end)
 						return bring(player,Goto,Type,true)
 					end
 				end
@@ -785,10 +824,6 @@ do
 			if pos then
 				wait(.1)
 			end
-			task.spawn(function()
-				wait(.7)
-				Temp.SMOOTHEN = nil
-			end)
 			return
 		end
 	end
@@ -895,7 +930,7 @@ do
 		end
 		Notif("Tiger admin is now unloaded, see you soon!")
 	end,"Unloads everything")
-	
+
 	Add_Command("kill",function(Args)
 		local Args = GetArgs(Args)
 		local Check1 = function(ar)
@@ -990,11 +1025,27 @@ do
 		else
 			NotFound()
 		end
-	end,"Respawns at death position")
+	end,"teleports to a player")
 	Add_Command("autorespawn",function(Args)
 		local Args = GetArgs(Args)
 		Toggle(Args[2],"autore")
 	end,"Respawns at death position")
+	Add_Command("fastpunch",function(Args)
+		local Args = GetArgs(Args)
+		Toggle(Args[2],"FastPunch")
+	end,"tap f as fast as you can")
+	Add_Command("killaura",function(Args)
+		local Args = GetArgs(Args)
+		Toggle(Args[2],"KillAura")
+		if States.KillAura then
+			if Parts[1] and Parts[1].Name == "KillAura" then
+				Parts[1]:Destroy()
+				Parts[1] = nil
+			end
+			wait()
+			CreateKillPart()
+		end
+	end,"Can't touch this but with bigger range")
 	Add_Command("autoitems",function(Args)
 		local Args = GetArgs(Args)
 		Toggle(Args[2],"AutoItems")
@@ -1019,6 +1070,7 @@ do
 			for i,v in pairs(getconnections(workspace:WaitForChild("Remote").tazePlayer.OnClientEvent)) do
 				v:Disable()
 			end
+			
 		else
 			for i,v in pairs(getconnections(workspace:WaitForChild("Remote").tazePlayer.OnClientEvent)) do
 				v:Enable()
@@ -1037,6 +1089,29 @@ do
 		local Args = GetArgs(Args)
 		Toggle(Args[2],"SilentAim")
 	end,"aim anywhere and not miss")
+	Add_Command("antipunch",function(Args)
+		local Args = GetArgs(Args)
+		Toggle(Args[2],"AntiPunch")
+		if States.AntiPunch then
+			for i,v in pairs(game:GetService("Players"):GetPlayers()) do
+				if v and v ~= plr then
+					AntiPunchC(v)
+					v.CharacterAdded:Connect(function(c)
+						repeat task.wait() until c and c:FindFirstChildOfClass("Humanoid")
+						
+						if States.AntiPunch then
+							AntiPunchC(v)
+						end
+					end)
+				end
+			end
+		end
+	end,"Prevents people from punching you")
+	Add_Command("antitouch",function(Args)
+		local Args = GetArgs(Args)
+		Toggle(Args[2],"AntiTouch")
+
+	end,"Can't touch this")
 	Add_Command("guard",function(Args)
 		local Args = GetArgs(Args)
 		local pos = getpos()
@@ -1479,7 +1554,6 @@ end
 plr.CharacterAdded:Connect(function(char)
 	if unloaded then return end
 	task.spawn(function()
-		--//AutoItems
 		--//Antibring
 		if States.Antibring then
 			char.ChildAdded:Connect(function(a)
@@ -1502,6 +1576,7 @@ plr.CharacterAdded:Connect(function(char)
 				refresh()
 			end)
 		end
+		--//AutoItems
 		repeat task.wait() until char and char:FindFirstChildOfClass("Humanoid")
 		task.spawn(function()
 			if unloaded then return end
@@ -1527,6 +1602,21 @@ plr.CharacterAdded:Connect(function(char)
 				end
 			end)
 		end)
+		--//AntiTase
+		task.spawn(function()
+			if States.AntiTase then
+				for i,v in pairs(getconnections(workspace:WaitForChild("Remote").tazePlayer.OnClientEvent)) do
+					v:Disable()
+				end
+			end
+		end)
+		--//Killaura part
+		task.spawn(function()
+			repeat task.wait()until plr.Character and char and char:FindFirstChildOfClass("Humanoid")
+			if States.KillAura then
+				CreateKillPart()
+			end
+		end)
 	end)
 	for i,v in pairs(plr.Backpack:GetChildren()) do
 		Whitelisted_ITEMS[#Whitelisted_ITEMS+1]=v
@@ -1550,6 +1640,24 @@ task.spawn(function()
 	while wait(.1) do
 		--//Slow loop
 		if unloaded then break end
+		if States.FastPunch then
+			getsenv(game.Players.LocalPlayer.Character.ClientInputHandler).cs.isFighting = false
+		end
+		if States.AntiTouch then
+			pcall(function()
+				for i,v in pairs(game:GetService("Players"):GetPlayers()) do
+					if v and v ~=plr and States.AntiTouch then
+						if (plr.Character.HumanoidRootPart.Position-v.Character.HumanoidRootPart.Position).magnitude <3.5 then
+							for i =1,13 do
+								task.spawn(function()
+									game.ReplicatedStorage["meleeEvent"]:FireServer(v)
+								end)
+							end
+						end
+					end
+				end
+			end)
+		end
 		pcall(function()
 			for i,v in pairs(plr.Backpack:GetChildren()) do
 				if v and not v:FindFirstChildOfClass("BoolValue") then
@@ -1759,22 +1867,12 @@ task.spawn(function()
 end)
 
 do
-	Temp.AntiFling = game:GetService("RunService").Stepped:Connect(function()
+	Temp.PPP = game:GetService("RunService").Stepped:Connect(function()
 		if not unloaded then
-			return
-		end
-		if Temp.SMOOTHEN then
-			local v = Temp.SMOOTHEN
-			for i,v in pairs(v.Character:GetChildren()) do
-				if v:IsA("BasePart") then
-					v.CanCollide = false
-				end
-				if v:IsA("Accessory") then
-					pcall(function()
-						v.Handle.CanCollide = false
-					end)
-				end
-			end 
+			if not unloaded and Parts[1] and States.KillAura then
+				Parts[1].CFrame = CFrame.new(plr.Character.HumanoidRootPart.Position)
+				print(Parts[1])
+			end
 		end
 	end)
 end
@@ -1808,7 +1906,7 @@ task.spawn(function()
 			end
 		end)
 		pcall(function()
-			if States.Killaura == true and unloaded == false then
+			if States.KillAura == true and unloaded == false then
 				for i,v in pairs(game.Players:GetPlayers()) do
 					if v ~= game.Players.LocalPlayer then
 						if (v.Character.HumanoidRootPart.Position - plr.Character.HumanoidRootPart.Position).magnitude <14 and v.Character.Humanoid.Health >0 then
@@ -1857,6 +1955,13 @@ task.spawn(function()
 				})
 			end
 		end
+	end
+end)
+game:GetService("Players").PlayerAdded:Connect(function(p)
+	repeat task.wait() until p and p.Character
+	wait()
+	if p ~= plr and States.AntiPunch then
+		AntiPunchC(p)
 	end
 end)
 
