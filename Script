@@ -555,16 +555,14 @@ do
 	end
 	function Valid_Team(Team)
 		if Team and typeof(Team):lower()=="string" then
-			if Team == "Medium stone grey" then
-				return false
-			end
-			if Team == "Bright orange" then
+			local Valid = {
+				"Medium stone grey",
+				"Bright orange",
+				"Bright blue",
+			}
+			if table.find(Valid,Team) then
 				return true
-			end
-			if Team =="Bright blue" then
-				return true
-			end
-			if Team == "Really red" then
+			elseif  Team == "Really red" then
 				return 1
 			end
 			return nil
@@ -750,7 +748,7 @@ do
 	end
 	function bring(player,pos,Type,Extra)
 		if player then
-			local lastteam = plr.Team
+			local lastteam = plr.TeamColor.Name
 			if plr.Team ~= game.Teams.Guards then
 				local ohString1 = "Bright blue"
 				workspace.Remote.TeamEvent:FireServer(ohString1)
@@ -809,7 +807,8 @@ do
 				wait(.2)
 				MoveToJunk(crimpad)
 			end
-			refresh(Last)
+			Last_Team(lastteam)
+			print('last')
 			plr.CharacterAdded:Wait():WaitForChild("HumanoidRootPart").CFrame = Last
 			Done = true
 			task.spawn(function()
@@ -1070,7 +1069,7 @@ do
 			for i,v in pairs(getconnections(workspace:WaitForChild("Remote").tazePlayer.OnClientEvent)) do
 				v:Disable()
 			end
-			
+
 		else
 			for i,v in pairs(getconnections(workspace:WaitForChild("Remote").tazePlayer.OnClientEvent)) do
 				v:Enable()
@@ -1098,7 +1097,7 @@ do
 					AntiPunchC(v)
 					v.CharacterAdded:Connect(function(c)
 						repeat task.wait() until c and c:FindFirstChildOfClass("Humanoid")
-						
+
 						if States.AntiPunch then
 							AntiPunchC(v)
 						end
@@ -1978,13 +1977,13 @@ end
 function AdminChatted(Text,Speaker)
 	Speaker = game:GetService("Players"):FindFirstChild(Speaker)
 	if unloaded then return end
-	local bM = string.lower(Text)
-	local bN = bM:split(" ")
-	Arg1_P = bN[1]
+	local TXT = string.lower(Text)
+	local SPLITED = TXT:split(" ")
+	Arg1_P = SPLITED[1]
 	local CmdsList = "[ADMIN]: !bring player, !cmds, !criminal player, !goto player"
-	local Arg2_P = bN[2]
-	local Arg3_P = bN[3]
-	local Arg4_P = bN[4]
+	local Arg2_P = SPLITED[2]
+	local Arg3_P = SPLITED[3]
+	local Arg4_P = SPLITED[4]
 	if commandPLAYER("bring") then
 		local r = FindPlayer(Arg2_P)
 		if r then
