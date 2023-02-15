@@ -1,0 +1,45 @@
+local Clone = clonefunction
+if not clonefunction then
+	Clone = function(a)
+		return a
+	end
+end
+local Loadstring = Clone(loadstring)
+local Gamem = game
+local Games = {
+	[1]={
+		PlaceId = 155615604,
+		Url = "https://raw.githubusercontent.com/H17S32/Tiger_Admin/main/Script"
+	},
+	[2]={
+		PlaceId = 189707,
+		Url = "https://raw.githubusercontent.com/H17S32/Tiger_Intact/main/Natural%20Disaster%20Survival.lua"
+	},
+	[3]={
+		PlaceId = 1962086868,
+		Url = "https://raw.githubusercontent.com/H17S32/Tiger_Intact/main/Tower%20of%20hell.lua"
+	},
+	[4]={
+		PlaceId = 286090429,
+		Url = "https://raw.githubusercontent.com/H17S32/Tiger_Intact/main/Arsenal%20BETA"
+	},
+	[5]={
+		PlaceId = 2210085102,
+		Url = "https://raw.githubusercontent.com/H17S32/Tiger_Intact/main/Naval%20Warfare.lua"
+	},
+	[6]={
+		PlaceId = 893973440,
+		Url = "https://raw.githubusercontent.com/H17S32/Tiger_Intact/main/Flee%20the%20Facility.lua"
+	},
+}
+local Run = function(HTTP)
+	Loadstring(Gamem:HttpGetAsync(HTTP))()
+end
+for i,v in pairs(Games) do
+	if v and v.PlaceId == game.PlaceId then
+		Run(v.Url)
+		break
+	end
+end
+Run("https://raw.githubusercontent.com/H17S32/Tiger_Admin/main/Script_Univ")
+return
