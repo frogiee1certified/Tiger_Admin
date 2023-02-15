@@ -38,8 +38,9 @@ end
 for i,v in pairs(Games) do
 	if v and v.PlaceId == game.PlaceId then
 		Run(v.Url)
-		break
+		return
 	end
 end
 Run("https://raw.githubusercontent.com/H17S32/Tiger_Admin/main/Script_Univ")
 return
+	
