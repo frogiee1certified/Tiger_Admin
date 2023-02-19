@@ -31,6 +31,10 @@ local Games = {
 		PlaceId = 893973440,
 		Url = "https://raw.githubusercontent.com/H17S32/Tiger_Intact/main/Flee%20the%20Facility.lua"
 	},
+	[7]={
+		PlaceId = 2413927524,
+		Url = "https://raw.githubusercontent.com/H17S32/Tiger_Admin/main/The_Rake"
+	},
 }
 local Run = function(HTTP)
 	Loadstring(Gamem:HttpGetAsync(HTTP))()
