@@ -55,6 +55,7 @@ do
 		AntiPunch = false,
 		AntiTase = false,
 		FastPunch = false,
+		Godmode = false,
 		Antibring = true,
 		AntiTouch = false,
 		AutoItems = false,
@@ -74,6 +75,7 @@ for i,v in pairs(workspace["Criminals Spawn"]:GetChildren()) do
 		MoveToJunk(v)
 	end
 end
+workspace.FallenPartsDestroyHeight = -math.huge
 task.spawn(function()
 	local FirePart =Instance.new("Part")
 	if not firetouchinterest then
@@ -183,7 +185,7 @@ do --//Main Gui
 	UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 	UIListLayout.Padding = UDim.new(0, 8)
 
-	TEMP_CMD.Parent = game
+	TEMP_CMD.Parent = Folder
 	TEMP_CMD.BackgroundColor3 = Color3.fromRGB(62, 62, 62)
 	TEMP_CMD.BackgroundTransparency = 0.750
 	TEMP_CMD.Size = UDim2.new(0, 455, 0, 14)
@@ -443,7 +445,64 @@ end
 do
 	--//Prison life stuff functions
 	HasGamepass = false
+	function swait()--//fast wait
+		game:GetService("RunService").Stepped:Wait()
+	end
+	function Godmode()
+		local Hats = {}
+		repeat task.wait() until plr.Character:FindFirstChildOfClass("Accessory")
+		do
+			--//Fix the stupid hat falling off because it looks good without it falling and because im not gay
+			for i,v in pairs(plr.Character:GetChildren()) do
+				if v and v:IsA("Accessory") then
+					pcall(function()
+						v.Handle.CanTouch = false
+						Hats[#Hats+1] = {
+							Hat = v,
+							OldPosition = v.Handle:FindFirstChildOfClass("Weld").C0,
+							OldPosition2 = v.Handle:FindFirstChildOfClass("Weld").C1
+						}
+						v.Handle.Anchored = true
+					end)
 
+				end
+			end
+		end
+		do--//Glitch Humanoid
+			task.spawn(function()
+				plr.Character:FindFirstChildOfClass("Humanoid"):Destroy()
+				Instance.new("Humanoid",plr.Character)
+				pcall(function()
+					plr.Character:FindFirstChild("Animate").Disabled = true
+					plr.Character:FindFirstChild("Animate").Disabled = false
+				end)
+			end)
+		end
+		do
+			local function FindHat(a)
+				for i,v in pairs(Hats) do
+					if v and v == a then
+						return v
+					end
+				end
+				return nil
+			end
+			--Fix hats 2
+			for i,v in pairs(Hats) do
+				if v then
+					pcall(function()
+						local Hat = v.Hat
+						local NewWeld = Instance.new("Weld",Hat.Handle)
+						NewWeld.Part0 = Hat.Handle
+						NewWeld.Part1 = plr.Character.Head
+						NewWeld.C0 = v.OldPosition
+						NewWeld.C1 = v.OldPosition2
+						Hat.Handle.Anchored = false
+					end)
+				end
+			end
+		end
+	end
 	function unsit()
 		plr.Character:FindFirstChildOfClass("Humanoid").Sit = false
 	end
@@ -505,38 +564,24 @@ do
 		end
 		game:GetService("Players").LocalPlayer.Character:SetPrimaryPartCFrame(saved)
 	end
-	function Get_Item(ITEM)
-		task.spawn(function()
-			if typeof(ITEM):lower() == "string" then
-				ITEM = ITEM:lower()
+	function GetGun(String,a)
+		local saved = game:GetService("Players").LocalPlayer.Character:GetPrimaryPartCFrame()
+		if String and game:GetService("Workspace").Prison_ITEMS.giver:FindFirstChild(String) then
+			local RandomPart = game:GetService("Workspace").Prison_ITEMS.giver:FindFirstChild(String):FindFirstChildOfClass("Part")
+			MoveTo(CFrame.new(RandomPart.Position))
+			wait()
+			for i =1,3 do
 				task.spawn(function()
-					if ITEM == "m9" then
-						workspace.Remote.ItemHandler:InvokeServer(workspace.Prison_ITEMS.giver["M9"].ITEMPICKUP)
-					elseif ITEM == "shotgun" then
-						workspace.Remote.ItemHandler:InvokeServer(workspace.Prison_ITEMS.giver["Remington 870"].ITEMPICKUP)
-					elseif ITEM == "ak" then
-						workspace.Remote.ItemHandler:InvokeServer(workspace.Prison_ITEMS.giver["AK-47"].ITEMPICKUP)
-					elseif ITEM == "m4" then
-						if HasGamepass then
-							workspace.Remote.ItemHandler:InvokeServer(workspace.Prison_ITEMS.giver["M4A1"].ITEMPICKUP)
-						end
-					elseif ITEM == "hammer" then
-						workspace.Remote.ItemHandler:InvokeServer(game:GetService("Workspace")["Prison_ITEMS"].single["Hammer"].ITEMPICKUP)
-					elseif ITEM == "knife" then
-						workspace.Remote.ItemHandler:InvokeServer(game:GetService("Workspace")["Prison_ITEMS"].single["Crude Knife"].ITEMPICKUP)
-					end
-				end)
-			else
-				task.spawn(function()
-					workspace.Remote.ItemHandler:InvokeServer(ITEM)
+					workspace.Remote.ItemHandler:InvokeServer(RandomPart)
 				end)
 			end
-		end)
-		local g = nil
-		g = plr.Backpack.ChildAdded:Connect(function(a)
-			g:Disconnect()
-			return a
-		end)
+		else
+			return
+		end
+		if not plr.Backpack:FindFirstChild(String) then
+			GetGun(String,saved)
+		end
+		game:GetService("Players").LocalPlayer.Character:SetPrimaryPartCFrame(a or saved)
 	end
 	function GetTeam()
 		return plr.TeamColor.Name
@@ -693,32 +738,7 @@ do
 			end)
 		end)
 	end
-	function arrest(Player,nex2)--//this is so old
-		local lastpos = getpos()
-		if not nex2 then
-			plr.Character.HumanoidRootPart.CFrame = Player.Character.HumanoidRootPart.CFrame
-		end
-		task.wait(.1)
-		for i =1,10 do
-			task.spawn(function()
-				pcall(function()
-					unsit()
-				end)
-				if not nex2 then
-					plr.Character.HumanoidRootPart.CFrame = Player.Character.HumanoidRootPart.CFrame
-				end
-				game.Workspace.Remote.arrest:InvokeServer(Player.Character["Head"])
-			end)
-			task.wait()
-		end
-		task.wait(.05)
-		pcall(function()
-			unsit()
-		end)	
-		if not nex2 then
-			MoveTo(lastpos)
-		end
-	end
+
 
 	function refresh(Pos)
 		if not Pos then
@@ -792,7 +812,7 @@ do
 							}
 							v.Handle.Anchored = true
 						end)
-						
+
 					end
 				end
 			end
@@ -840,6 +860,7 @@ do
 						_MAX+=1
 						MoveTo(Goto)
 						player.Character:SetPrimaryPartCFrame(Handcuffs.Handle.CFrame)
+						wait(.1)
 					end)
 				end
 				if Handcuffs and Handcuffs:FindFirstChild("Handle") then
@@ -854,6 +875,8 @@ do
 				wait(.2)
 				MoveToJunk(crimpad)
 			end
+			game:GetService("Players").LocalPlayer.Character:MoveTo(player.Character.Head.Position)
+			MoveTo(Last)--//stupid fix for it killing
 			Last_Team(lastteam)
 			plr.CharacterAdded:Wait():WaitForChild("HumanoidRootPart").CFrame = Last
 			Done = true
@@ -941,6 +964,18 @@ do
 		wait()
 		workspace.CurrentCamera.CameraSubject = plr.Character:FindFirstChildOfClass("Humanoid")
 	end,"unviews")
+	Add_Command("m9",function(Args)
+		local Args = GetArgs(Args)
+		GetGun("M9")
+	end,"Gets m9")
+	Add_Command("ak",function(Args)
+		local Args = GetArgs(Args)
+		GetGun("AK-47")
+	end,"Gets ak47")
+	Add_Command("shotgun",function(Args)
+		local Args = GetArgs(Args)
+		GetGun("Remington 870")
+	end,"Gets a shotgun")
 	Add_Command("rj",function(Args)
 		local Args = GetArgs(Args)
 		Execute_Command("!rejoin","!rejoin")
@@ -952,6 +987,61 @@ do
 	Add_Command("re",function(Args)
 		local Args = GetArgs(Args)
 		Execute_Command("!refresh","!refresh")
+	end,"true",true)
+	Add_Command("godmode",function(Args)
+		local Args = GetArgs(Args)
+		Toggle(Args[2],"Godmode")
+		if States.Godmode then--//Long ass godmode
+			Godmode()
+			local OldP = getpos()
+			Temp.IsG = false
+			wait()
+			Temp.IsG = true
+			Temp.ST =false
+			local Cam = workspace.CurrentCamera.CFrame
+			Temp.Godmode = plr.CharacterAdded:Connect(function(a)
+				Temp.ST = true
+				task.spawn(function()
+					workspace.CurrentCamera:GetPropertyChangedSignal("CFrame"):Wait()
+					for i =1,5 do
+						workspace.CurrentCamera.CFrame = Cam
+					end
+				end)
+				repeat task.wait() until a and a:FindFirstChildOfClass("Humanoid")
+				MoveTo(OldP)
+				Godmode()
+				wait()
+				Temp.ST = false
+				task.spawn(function()
+					task.wait(.04)
+					MoveTo(OldP)
+				end)
+			end)
+			repeat swait()
+				if not States.Godmode or unloaded then
+					if unloaded then
+						pcall(function()
+							Temp.IsG = false
+							Temp.ST = nil
+							Temp.Godmode:Disconnect()
+						end)
+					end
+					break
+				end
+				if not Temp.ST then
+					Cam = workspace.CurrentCamera.CFrame
+					OldP = getpos()
+				end
+			until States.Godmode == false
+		else
+			pcall(function()
+				Temp.IsG = false
+				Temp.ST = nil
+				Temp.Godmode:Disconnect()
+			end)
+			wait()
+			refresh()
+		end
 	end,"true",true)
 	Add_Command("unload",function(Args)
 		local Args = GetArgs(Args)
