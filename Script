@@ -719,6 +719,7 @@ do
 			MoveTo(lastpos)
 		end
 	end
+
 	function refresh(Pos)
 		if not Pos then
 			Pos = getpos()
@@ -749,12 +750,17 @@ do
 	--//Shits 100 lines :skull:
 	function bring(player,pos,Type,Extra)
 		if player then
-			print('ran')
 			local lastteam = plr.TeamColor.Name
 			if plr.Team ~= game.Teams.Guards then
 				local ohString1 = "Bright blue"
 				workspace.Remote.TeamEvent:FireServer(ohString1)
 			end
+			task.spawn(function()
+				wait(.1)
+				if plr.Team ~= game.Teams.Guards then
+					Notif("Guards team full or server laggy.")
+				end
+			end)
 			wait()
 			local Done = false
 			local _MAX = 0
@@ -777,13 +783,16 @@ do
 				--//Fix the stupid hat falling off because it looks good without it falling and because im not gay
 				for i,v in pairs(plr.Character:GetChildren()) do
 					if v and v:IsA("Accessory") then
-						v.Handle.CanTouch = false
-						Hats[#Hats+1] = {
-							Hat = v,
-							OldPosition = v.Handle:FindFirstChildOfClass("Weld").C0,
-							OldPosition2 = v.Handle:FindFirstChildOfClass("Weld").C1
-						}
-						v.Handle.Anchored = true
+						pcall(function()
+							v.Handle.CanTouch = false
+							Hats[#Hats+1] = {
+								Hat = v,
+								OldPosition = v.Handle:FindFirstChildOfClass("Weld").C0,
+								OldPosition2 = v.Handle:FindFirstChildOfClass("Weld").C1
+							}
+							v.Handle.Anchored = true
+						end)
+						
 					end
 				end
 			end
@@ -805,13 +814,15 @@ do
 				--Fix hats 2
 				for i,v in pairs(Hats) do
 					if v then
-						local Hat = v.Hat
-						local NewWeld = Instance.new("Weld",Hat.Handle)
-						NewWeld.Part0 = Hat.Handle
-						NewWeld.Part1 = plr.Character.Head
-						NewWeld.C0 = v.OldPosition
-						NewWeld.C1 = v.OldPosition2
-						Hat.Handle.Anchored = false
+						pcall(function()
+							local Hat = v.Hat
+							local NewWeld = Instance.new("Weld",Hat.Handle)
+							NewWeld.Part0 = Hat.Handle
+							NewWeld.Part1 = plr.Character.Head
+							NewWeld.C0 = v.OldPosition
+							NewWeld.C1 = v.OldPosition2
+							Hat.Handle.Anchored = false
+						end)
 					end
 				end
 			end
@@ -1036,8 +1047,9 @@ do
 			MoveTo(pos)
 		else
 			local r = FindPlayer(Args[2])
+			print(r)
 			if r then
-				Get_Item("m9")
+				print('valid')
 				bring(r)
 			else
 				NotFound()
