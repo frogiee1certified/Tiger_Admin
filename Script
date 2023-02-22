@@ -1796,7 +1796,7 @@ task.spawn(function()
 		end
 		pcall(function()
 			for i,v in pairs(plr.Backpack:GetChildren()) do
-				if v and not v:FindFirstChildOfClass("BoolValue") then
+				if v and not v:FindFirstChild("ISWHITELISTED") then
 					Whitelisted_ITEMS[#Whitelisted_ITEMS+1]=v
 					Instance.new("BoolValue",v).Name = "ISWHITELISTED"
 				end
