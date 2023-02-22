@@ -90,7 +90,7 @@ do
 		States.InfSprint = not States.InfSprint
 	end)
 	GameFunctions:CreateSlider("Set speed", 14, 100, 15, false, function(value)
-		States.Speed = value
+		States.Speed = value or 1
 	end)
 end
 
@@ -108,19 +108,17 @@ end
 UserInputService.InputBegan:Connect(onInputBegan)
 UserInputService.InputEnded:Connect(onInputEnd)
 
-do
-	function GetFlashlight()
-		local Tool = plr.Character:FindFirstChild("Flashlight") or plr.Backpack:FindFirstChild("Flashlight")
-		return Tool.Handle.Flashlight.Light
-	end
-	--Flashlightmods
-	FlashlightMods:CreateSlider("Brightness", 1, 50, 15, false, function(value)
-		GetFlashlight().Light1.Brightness = value
-	end)
-	FlashlightMods:CreateSlider("Range", 1, 60, 15, false, function(value)
-		GetFlashlight().Light1.Range = value
-	end)
-	FlashlightMods:CreateColorPicker("Color", Color3.new(255, 255, 255), function(value)
-		GetFlashlight().Light1.Color = value
-	end)
+function GetFlashlight()
+	local Tool = plr.Character:FindFirstChild("Flashlight") or plr.Backpack:FindFirstChild("Flashlight")
+	return Tool.Handle.Flashlight.Light
 end
+--Flashlightmods
+FlashlightMods:CreateSlider("Brightness", 1, 50, 15, false, function(value)
+	GetFlashlight().Light1.Brightness = value
+end)
+FlashlightMods:CreateSlider("Range", 1, 60, 15, false, function(value)
+	GetFlashlight().Light1.Range = value
+end)
+FlashlightMods:CreateColorPicker("Color", Color3.new(255, 255, 255), function(value)
+	GetFlashlight().Light1.Color = value
+end)
