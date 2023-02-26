@@ -70,6 +70,7 @@ do
 		AntiArrest = false,
 		Admined = {},
 	}
+	Reload_Guns = {}
 	Whitelisted = {}
 	Parts = {}
 	Temp = {}
@@ -716,7 +717,7 @@ do
 		if typeof(player):lower() == "string" then
 			if game:GetService("Players"):FindFirstChild(player) then
 				player = game:GetService("Players"):FindFirstChild(player)
-				
+
 			end
 		end
 		if table.find(Whitelisted,player.Name) then
@@ -932,7 +933,7 @@ do
 				b.Force = Vector3.new(99999,10000,999999)
 				b.Location = plr.Character.HumanoidRootPart.Position
 				wait(.2)
-				
+
 			end
 			game:GetService("Players").LocalPlayer.Character:MoveTo(player.Character.Head.Position)
 			MoveTo(Last)--//stupid fix for it killing
@@ -1212,6 +1213,15 @@ do
 	Add_Command("loopkill",function(Args)
 		local Args = GetArgs(Args)
 		local r =FindPlayer(Args[2])
+		if Args[2]=="all" then
+			task.spawn(function()
+				Temp.LkAll = true
+				repeat wait()
+					Kill_All()
+				until Temp.LkAll == nil
+			end)
+			return
+		end
 		if r then
 			loopkilling[#loopkilling+1]=r.Name
 			Notif("loop killing "..r.Name)
@@ -1222,6 +1232,11 @@ do
 	Add_Command("unloopkill",function(Args)
 		local Args = GetArgs(Args)
 		local r =FindPlayer(Args[2])
+		if Args[2]=="all" then
+			Notif("Unloop killed all")
+			Temp.LkAll = nil
+			return
+		end
 		if r then
 			table.remove(loopkilling,table.find(loopkilling,r.Name))
 			Notif("unlooped "..r.Name)
@@ -1260,6 +1275,75 @@ do
 			NotFound()
 		end
 	end,"Admins a player")
+	Add_Command("modgun",function(Args)
+		local Args = GetArgs(Args)
+		if plr.Character:FindFirstChildOfClass("Tool") then
+			local Tool = plr.Character:FindFirstChildOfClass("Tool")
+			if not Tool:FindFirstChild("GunStates") then
+				return Notif("Needs to be a gun!")
+			end
+			local cc = require(Tool.GunStates)
+			cc["Damage"] = 9e9
+			cc["FireRate"] = 0.001
+			cc["Range"] = math.huge
+			cc["MaxAmmo"] = math.huge
+			cc["StoredAmmo"] = math.huge
+			cc["AmmoPerClip"] = math.huge
+			cc["CurrentAmmo"] = math.huge
+			if Tool.Name ~= "Remington 870" then
+				cc["Bullets"] = 1
+				cc["AutoFire"] = true
+			end
+			Reload_Guns[#Reload_Guns]=Tool
+		else
+			Notif("You need to hold the tool you want to mod!")
+		end
+	end,"Mods your gun")
+	Add_Command("autofire",function(Args)
+		local Args = GetArgs(Args)
+		if plr.Character:FindFirstChildOfClass("Tool") then
+			local Tool = plr.Character:FindFirstChildOfClass("Tool")
+			if not Tool:FindFirstChild("GunStates") then
+				return Notif("Needs to be a gun!")
+			end
+			local cc = require(Tool.GunStates)
+			cc["AutoFire"] = true
+			Reload_Guns[#Reload_Guns]=Tool
+		else
+			Notif("You need to hold the tool you want to mod!")
+		end
+	end,"Makes your gun autofire")
+	Add_Command("firerate",function(Args)
+		local Args = GetArgs(Args)
+		if plr.Character:FindFirstChildOfClass("Tool") then
+			local Tool = plr.Character:FindFirstChildOfClass("Tool")
+			if not Tool:FindFirstChild("GunStates") then
+				return Notif("Needs to be a gun!")
+			end
+			local cc = require(Tool.GunStates)
+			cc["FireRate"] = -math.huge
+			Reload_Guns[#Reload_Guns]=Tool
+		else
+			Notif("You need to hold the tool you want to mod!")
+		end
+	end,"Shoot very fast")
+	Add_Command("infammo",function(Args)
+		local Args = GetArgs(Args)
+		if plr.Character:FindFirstChildOfClass("Tool") then
+			local Tool = plr.Character:FindFirstChildOfClass("Tool")
+			if not Tool:FindFirstChild("GunStates") then
+				return Notif("Needs to be a gun!")
+			end
+			local cc = require(Tool.GunStates)
+			cc["MaxAmmo"] = math.huge
+			cc["StoredAmmo"] = math.huge
+			cc["AmmoPerClip"] = math.huge
+			cc["CurrentAmmo"] = math.huge
+			Reload_Guns[#Reload_Guns]=Tool
+		else
+			Notif("You need to hold the tool you want to mod!")
+		end
+	end,"makes your gun have inf ammo")
 	Add_Command("unadmin",function(Args)
 		local Args = GetArgs(Args)
 		local r = Args[2]
@@ -1986,6 +2070,19 @@ task.spawn(function()
 end)
 task.spawn(function()
 	while wait(1) do --//Even SLOWER loop
+		if #Reload_Guns>0 then
+			for i,v in pairs(Reload_Guns) do
+				if v then
+					task.spawn(function()
+						game:GetService("ReplicatedStorage").ReloadEvent:FireServer(v)
+					end)
+					wait()
+				end
+				if v == nil or v and v.Parent == nil then
+					Reload_Guns[i]=nil
+				end
+			end
+		end
 		if #loopkilling>0 then
 			for i,v in pairs(loopkilling) do
 				if v and game:GetService("Players"):FindFirstChild(v) then
@@ -2283,6 +2380,10 @@ function AdminChatted(Text,Speaker)
 				Msg(Speaker,"[ADMIN]: Player is dead please try again.")
 				return
 			end
+			if not Speaker.Character then
+				Notif("Please try again (Character not found).")
+				return
+			end
 			bring(r,Speaker.Character:GetPrimaryPartCFrame()*CFrame.new(0,5,0))
 		else
 			Msg(Speaker,"Player not found!")
@@ -2296,6 +2397,10 @@ function AdminChatted(Text,Speaker)
 				Msg(Speaker,"[ADMIN]: Player is dead please try again.")
 				return
 			end
+			if not Speaker.Character then
+				Notif("Please try again (Character not found).")
+				return
+			end
 			bring(r,r.Character:GetPrimaryPartCFrame()*CFrame.new(0,1,0),nil,"crim")
 		else
 			Msg(Speaker,"[ADMIN]: Player not found!")
@@ -2305,6 +2410,10 @@ function AdminChatted(Text,Speaker)
 	if commandPLAYER("goto") then
 		local r = FindPlayer(Arg2_P)
 		if r then
+			if not Speaker.Character then
+				Notif("Please try again (Character not found).")
+				return
+			end
 			bring(Speaker,r.Character:GetPrimaryPartCFrame()*CFrame.new(0,1,0),nil,"crim")
 		else
 			Msg(Speaker,"[ADMIN]: Player not found!")
