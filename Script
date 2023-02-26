@@ -10,6 +10,7 @@
 ]]
 repeat task.wait() until game:IsLoaded()
 do--//Instances
+	Debug = true
 	BETA = true
 	Folder = Instance.new("Folder")
 	ScreenGui = Instance.new("ScreenGui")
@@ -38,6 +39,13 @@ do--//Instances
 	unloaded=false
 	firetouchinterest=firetouchinterest
 	firetouch = firetouchinterest
+	oldprint = print
+	loopkilling = {}
+	print = function(...)
+		if Debug then
+			oldprint(...)
+		end
+	end
 end
 do
 	--//Top functions & tables
@@ -661,7 +669,7 @@ do
 	end
 	function MKILL(target,STOP,P)
 		if not STOP then STOP =1 end
-		if not target or not target.Character or not target.Character:FindFirstChild("Humanoid") or target.Character:FindFirstChildOfClass("ForceField")  then
+		if not target or not target.Character or not target.Character:FindFirstChild("Humanoid") or target.Character:FindFirstChildOfClass("ForceField") or target.Character:FindFirstChild("Humanoid").Health<1  then
 			return
 		end
 		local saved = getpos()
@@ -684,7 +692,7 @@ do
 		local saved = getpos()
 		local Team = GetTeam()
 		for i,v in pairs(game:GetService("Players"):GetPlayers()) do
-			if v and v~= plr then
+			if v and v~= plr and not table.find(Whitelisted,v.Name) then
 				MKILL(v)
 			end
 		end
@@ -696,7 +704,48 @@ do
 				player = game:GetService("Players"):FindFirstChild(player)
 			end
 		end
+		if table.find(Whitelisted,player.Name) then
+			print("error is whitelisted - 1")
+			return Notif("This player is whitelisted")
+		end
 		MKILL(player)
+	end
+	function tase(player)
+		print("Called")
+		local lastteam,Last = plr.TeamColor.Name,getpos()
+		if typeof(player):lower() == "string" then
+			if game:GetService("Players"):FindFirstChild(player) then
+				player = game:GetService("Players"):FindFirstChild(player)
+				
+			end
+		end
+		if table.find(Whitelisted,player.Name) then
+			print("error is whitelisted - 1")
+			return Notif("This player is whitelisted")
+		end
+		if plr.Team ~= game.Teams.Guards then
+			local ohString1 = "Bright blue"
+			task.spawn(function()
+				plr.CharacterAdded:Wait():WaitForChild("HumanoidRootPart").CFrame = Last
+			end)
+			workspace.Remote.TeamEvent:FireServer(ohString1)
+		end
+		repeat task.wait() until game:GetService("Players").LocalPlayer.Backpack:FindFirstChild("Taser")
+		wait(.3)
+		game:GetService("ReplicatedStorage").ShootEvent:FireServer({
+			[1] = {
+				["RayObject"] = Ray.new(Vector3.new(972.877869, 101.489967, 2362.66821), Vector3.new(-53.8579292, -7.45228672, 83.9272766)),
+				["Distance"] = 1,
+				["Cframe"] = CFrame.new(969.60144, 100.734177, 2369.42334, 0.777441919, -0.0313242674, -0.628174186, 1.86264515e-09, 0.998758912, -0.0498036928, 0.628954709, 0.038719479, 0.776477098),
+				["Hit"] = player.Character.HumanoidRootPart
+			}
+		}, game:GetService("Players").LocalPlayer.Backpack:FindFirstChild("Taser"))
+		print('ShotBullet')
+		task.spawn(function() game:GetService("ReplicatedStorage").ReloadEvent:FireServer(game:GetService("Players").LocalPlayer.Backpack:FindFirstChild("Taser")) end)
+		print('Reloaded')
+		wait(.4)
+		Last_Team(lastteam)
+		plr.CharacterAdded:Wait():WaitForChild("HumanoidRootPart").CFrame = Last
 	end
 	function touch(Toucher,TouchThis)
 		if not Toucher or not TouchThis then
@@ -705,6 +754,7 @@ do
 		task.spawn(function()
 			firetouch(Toucher,TouchThis,0)
 			firetouch(Toucher,TouchThis,1)
+			print("Touch")
 		end)
 	end
 	function MoveTo(Pos,t)
@@ -726,7 +776,7 @@ do
 			v2.Character:FindFirstChildOfClass("Humanoid").AnimationPlayed:Connect(function(animationTrack)
 				if States.AntiPunch and not unloaded then
 					if animationTrack.Animation.AnimationId == "rbxassetid://484200742" or animationTrack.Animation.AnimationId =="rbxassetid://484926359" then
-						if (plr.Character.HumanoidRootPart.Position-v2.Character.HumanoidRootPart.Position).magnitude <3.5 then
+						if (plr.Character.HumanoidRootPart.Position-v2.Character.HumanoidRootPart.Position).magnitude <3.5 and not table.find(Whitelisted,v2.Name) then
 							for i =1,13 do
 								task.spawn(function()
 									game.ReplicatedStorage["meleeEvent"]:FireServer(v2)
@@ -765,6 +815,7 @@ do
 			end)
 		end)
 		Events.loadchar()
+		print("Refreshed")
 		return
 	end
 	--//Shits 100 lines :skull:
@@ -792,6 +843,7 @@ do
 			end
 			local Goto = pos
 			repeat task.wait() Handcuffs = plr.Backpack:FindFirstChild("Handcuffs")  until Handcuffs and Handcuffs:FindFirstChild("Handle")
+			Handcuffs.Handle:FindFirstChildOfClass("SpecialMesh"):Destroy()
 			wait(.1)
 			if pos then
 				MoveTo(pos)
@@ -875,6 +927,13 @@ do
 				wait(.2)
 				MoveToJunk(crimpad)
 			end
+			if Extra =="fling" then
+				local b = Instance.new("BodyThrust",plr.Character.HumanoidRootPart)
+				b.Force = Vector3.new(99999,10000,999999)
+				b.Location = plr.Character.HumanoidRootPart.Position
+				wait(.2)
+				
+			end
 			game:GetService("Players").LocalPlayer.Character:MoveTo(player.Character.Head.Position)
 			MoveTo(Last)--//stupid fix for it killing
 			Last_Team(lastteam)
@@ -882,8 +941,8 @@ do
 			Done = true
 			task.spawn(function()
 				wait(.4)
-				if (player.Character:FindFirstChild("HumanoidRootPart").Position-Goto.Position).Magnitude >6 then
-					if Extra and Extra == true and Extra ~="crim" then
+				if player.Character:FindFirstChild("HumanoidRootPart") and (player.Character:FindFirstChild("HumanoidRootPart").Position-Goto.Position).Magnitude >6 then
+					if Extra and Extra == true and Extra ~="crim" or Extra == "fling" then
 					else
 						return bring(player,Goto,Type,true)
 					end
@@ -968,6 +1027,22 @@ do
 		local Args = GetArgs(Args)
 		GetGun("M9")
 	end,"Gets m9")
+	Add_Command("tase",function(Args)
+		local Args = GetArgs(Args)
+		local r = FindPlayer(Args[2])
+		if r then
+			tase(r)
+		end
+	end,"tases a player","PLAYER_COMMAND")
+	Add_Command("fling",function(Args)
+		local Args = GetArgs(Args)
+		local r = FindPlayer(Args[2])
+		if r then
+			bring(r,nil,nil,"fling")
+		else
+			NotFound()
+		end
+	end,"flings a player","PLAYER_COMMAND")
 	Add_Command("ak",function(Args)
 		local Args = GetArgs(Args)
 		GetGun("AK-47")
@@ -1134,6 +1209,46 @@ do
 		end
 		return game:GetService("TeleportService"):TeleportToPlaceInstance(game['PlaceId'], Ids[math.random(1, #Ids)])
 	end,"Unloads everything")
+	Add_Command("loopkill",function(Args)
+		local Args = GetArgs(Args)
+		local r =FindPlayer(Args[2])
+		if r then
+			loopkilling[#loopkilling+1]=r.Name
+			Notif("loop killing "..r.Name)
+		else
+			NotFound()
+		end
+	end,"loop kills a player")
+	Add_Command("unloopkill",function(Args)
+		local Args = GetArgs(Args)
+		local r =FindPlayer(Args[2])
+		if r then
+			table.remove(loopkilling,table.find(loopkilling,r.Name))
+			Notif("unlooped "..r.Name)
+		else
+			NotFound()
+		end
+	end,"unloop kills a player")
+	Add_Command("whitelist",function(Args)
+		local Args = GetArgs(Args)
+		local r =FindPlayer(Args[2])
+		if r then
+			Whitelisted[#Whitelisted+1]=r.Name
+			Notif("whitelisted "..r.Name)
+		else
+			NotFound()
+		end
+	end,"Cant harm that player with commands")
+	Add_Command("unwhitelist",function(Args)
+		local Args = GetArgs(Args)
+		local r =FindPlayer(Args[2])
+		if r then
+			table.remove(Whitelisted,table.find(Whitelisted,r.Name))
+			Notif("unwhitelisted "..r.Name)
+		else
+			NotFound()
+		end
+	end,"unwhitelists a player")
 	Add_Command("admin",function(Args)
 		local Args = GetArgs(Args)
 		local r =FindPlayer(Args[2])
@@ -1168,15 +1283,33 @@ do
 			MoveTo(pos)
 		else
 			local r = FindPlayer(Args[2])
-			print(r)
 			if r then
-				print('valid')
 				bring(r)
 			else
 				NotFound()
 			end
 		end
 	end,"Brings a player to you","PLAYER_COMMAND")
+	Add_Command("void",function(Args)
+		local Args = GetArgs(Args)
+		if Args[2] == "all" then
+			local pos = getpos()
+			for i,v in pairs(game:GetService("Players"):GetPlayers()) do
+				if v and v~= plr then
+					bring(v,CFrame.new(9999999999999,9999999999999999,999999999999999))
+				end
+			end
+			wait()
+			MoveTo(pos)
+		else
+			local r = FindPlayer(Args[2])
+			if r then
+				bring(r,CFrame.new(9999999999999,9999999999999999,999999999999999))
+			else
+				NotFound()
+			end
+		end
+	end,"Brings a player to the void","PLAYER_COMMAND")
 	Add_Command("speed",function(Args)
 		local Args = GetArgs(Args)
 		local r = Args[2]
@@ -1851,30 +1984,21 @@ task.spawn(function()
 		end)
 	end
 end)
+task.spawn(function()
+	while wait(1) do --//Even SLOWER loop
+		if #loopkilling>0 then
+			for i,v in pairs(loopkilling) do
+				if v and game:GetService("Players"):FindFirstChild(v) then
+					MKILL(game:GetService("Players"):FindFirstChild(v))
+					wait()
+				end
+			end
+		end
+	end
+end)
 do--Take over client scripts and anticrash
 	pcall(function()
 		game:GetService("Players").LocalPlayer.PlayerScripts.ClientGunReplicator.Disabled = true
-	end)
-	Temp[#Temp+1] =game.DescendantAdded:Connect(function(a)
-		if unloaded == false then
-			local Scan = function(Parent)
-				local Welds = 0
-				for i,v in pairs(Parent:GetChildren()) do
-					if v and v:IsA("Weld") then
-						Welds+=1
-					end
-				end
-				return Welds
-			end
-			if a and a:IsA("Weld") and States.AntiDelay and a.Parent and a.Parent.Name:lower() == "handle" then
-				pcall(function()
-					if Scan(a.Parent) >140 then
-						task.defer(a.Destroy,a)
-						task.defer(a.Parent.Destroy,a.Parent)
-					end
-				end)
-			end
-		end
 	end)
 	--ClientGunReplicator
 	local BulletCoolDown = false
@@ -2076,7 +2200,7 @@ task.spawn(function()
 			if States.KillAura == true and unloaded == false then
 				for i,v in pairs(game.Players:GetPlayers()) do
 					if v ~= game.Players.LocalPlayer then
-						if (v.Character.HumanoidRootPart.Position - plr.Character.HumanoidRootPart.Position).magnitude <14 and v.Character.Humanoid.Health >0 then
+						if not table.find(Whitelisted,v.Name) and (v.Character.HumanoidRootPart.Position - plr.Character.HumanoidRootPart.Position).magnitude <14 and v.Character.Humanoid.Health >0 then
 							local args = {
 								[1] = v
 							}
