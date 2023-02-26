@@ -1196,7 +1196,7 @@ do
 			wait()
 			refresh()
 		end
-	end,"Makes you in godmode")
+	end,"Makes you in godmode","TOGGLE_COMMAND")
 	Add_Command("unload",function(Args)
 		local Args = GetArgs(Args)
 		unloaded= true
@@ -1285,7 +1285,7 @@ do
 		else
 			NotFound()
 		end
-	end,"loop kills a player")
+	end,"loop kills a player","PLAYER_COMMAND")
 	Add_Command("unloopkill",function(Args)
 		local Args = GetArgs(Args)
 		local r =FindPlayer(Args[2])
@@ -1300,7 +1300,7 @@ do
 		else
 			NotFound()
 		end
-	end,"unloop kills a player")
+	end,"unloop kills a player","PLAYER_COMMAND")
 	Add_Command("whitelist",function(Args)
 		local Args = GetArgs(Args)
 		local r =FindPlayer(Args[2])
@@ -1310,7 +1310,7 @@ do
 		else
 			NotFound()
 		end
-	end,"Cant harm that player with commands")
+	end,"Cant harm that player with commands","PLAYER_COMMAND")
 	Add_Command("unwhitelist",function(Args)
 		local Args = GetArgs(Args)
 		local r =FindPlayer(Args[2])
@@ -1320,7 +1320,7 @@ do
 		else
 			NotFound()
 		end
-	end,"unwhitelists a player")
+	end,"unwhitelists a player","PLAYER_COMMAND")
 	Add_Command("admin",function(Args)
 		local Args = GetArgs(Args)
 		local r =FindPlayer(Args[2])
@@ -1331,7 +1331,7 @@ do
 		else
 			NotFound()
 		end
-	end,"Admins a player")
+	end,"Admins a player","PLAYER_COMMAND")
 	Add_Command("modgun",function(Args)
 		local Args = GetArgs(Args)
 		if plr.Character:FindFirstChildOfClass("Tool") then
@@ -1410,7 +1410,7 @@ do
 		else
 			NotFound()
 		end
-	end,"Admins a player")
+	end,"Admins a player","PLAYER_COMMAND")
 	Add_Command("bring",function(Args)
 		local Args = GetArgs(Args)
 		if Args[2] == "all" then
@@ -1457,7 +1457,7 @@ do
 		if r and tonumber(r) then
 			plr.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = r
 		end
-	end,"Speed what else do you think")
+	end,"Speed what else do you think","NUMBER_COMMAND")
 	Add_Command("goto",function(Args)
 		local Args = GetArgs(Args)
 		local r = FindPlayer(Args[2])
@@ -1470,11 +1470,11 @@ do
 	Add_Command("autorespawn",function(Args)
 		local Args = GetArgs(Args)
 		Toggle(Args[2],"autore")
-	end,"Respawns at death position")
+	end,"Respawns at death position","TOGGLE_COMMAND")
 	Add_Command("fastpunch",function(Args)
 		local Args = GetArgs(Args)
 		Toggle(Args[2],"FastPunch")
-	end,"tap f as fast as you can")
+	end,"tap f as fast as you can","TOGGLE_COMMAND")
 	Add_Command("killaura",function(Args)
 		local Args = GetArgs(Args)
 		Toggle(Args[2],"KillAura")
@@ -1491,11 +1491,11 @@ do
 				Parts[1] = nil
 			end
 		end
-	end,"Can't touch this but with bigger range")
+	end,"Can't touch this but with bigger range","TOGGLE_COMMAND")
 	Add_Command("autoitems",function(Args)
 		local Args = GetArgs(Args)
 		Toggle(Args[2],"AutoItems")
-	end,"Get guns at respawn")
+	end,"Get guns at respawn","TOGGLE_COMMAND")
 	Add_Command("antiarrest",function(Args)
 		local Args = GetArgs(Args)
 		Toggle(Args[2],"AntiArrest")
@@ -1508,7 +1508,7 @@ do
 				v:Enable()
 			end
 		end
-	end,"Trys to prevent arresting")
+	end,"Trys to prevent arresting","TOGGLE_COMMAND")
 	Add_Command("antitase",function(Args)
 		local Args = GetArgs(Args)
 		Toggle(Args[2],"AntiTase")
@@ -1522,7 +1522,7 @@ do
 				v:Enable()
 			end
 		end
-	end,"Trys to prevent tasing")
+	end,"Trys to prevent tasing","TOGGLE_COMMAND")
 	Add_Command("autore",function(Args)
 		local Args = GetArgs(Args)
 		Toggle(Args[2],"autore")
@@ -1530,11 +1530,11 @@ do
 	Add_Command("antibring",function(Args)
 		local Args = GetArgs(Args)
 		Toggle(Args[2],"Antibring")
-	end,"No exploiter can bring you")
+	end,"No exploiter can bring you","TOGGLE_COMMAND")
 	Add_Command("silentaim",function(Args)
 		local Args = GetArgs(Args)
 		Toggle(Args[2],"SilentAim")
-	end,"aim anywhere and not miss")
+	end,"aim anywhere and not miss","TOGGLE_COMMAND")
 	Add_Command("antipunch",function(Args)
 		local Args = GetArgs(Args)
 		Toggle(Args[2],"AntiPunch")
@@ -1552,12 +1552,12 @@ do
 				end
 			end
 		end
-	end,"Prevents people from punching you")
+	end,"Prevents people from punching you","TOGGLE_COMMAND")
 	Add_Command("antitouch",function(Args)
 		local Args = GetArgs(Args)
 		Toggle(Args[2],"AntiTouch")
 
-	end,"Can't touch this")
+	end,"Can't touch this","TOGGLE_COMMAND")
 	Add_Command("guard",function(Args)
 		local Args = GetArgs(Args)
 		local pos = getpos()
@@ -2063,7 +2063,7 @@ plr.CharacterAdded:Connect(function(char)
 		--//Killaura part
 		task.spawn(function()
 			repeat task.wait()until plr.Character and char and char:FindFirstChildOfClass("Humanoid")
-			
+
 			if States.KillAura then
 				CreateKillPart()
 			end
