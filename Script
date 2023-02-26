@@ -453,6 +453,21 @@ end
 
 do
 	--//Prison life stuff functions
+	function WaitForRespawn()
+		task.spawn(function()
+			local RepeatPos = getpos()
+			Temp.Waiting2 = plr.CharacterAdded:Connect(function(char)
+				Temp.Waiting = false
+				repeat task.wait() until char and char:FindFirstChild("HumanoidRootPart")
+				MoveTo(RepeatPos)
+			end)
+			repeat task.wait()
+				RepeatPos = getpos()
+			until Temp.Waiting == false
+			Temp.Waiting2:Disconnect()
+		end)
+		return
+	end
 	HasGamepass = false
 	function swait()--//fast wait
 		game:GetService("RunService").Stepped:Wait()
@@ -673,6 +688,7 @@ do
 		if not target or not target.Character or not target.Character:FindFirstChild("Humanoid") or target.Character:FindFirstChildOfClass("ForceField") or target.Character:FindFirstChild("Humanoid").Health<1  then
 			return
 		end
+		unsit()
 		local saved = getpos()
 		if not P then P = saved else saved = P end
 		game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = target.Character:FindFirstChild("Head").CFrame
@@ -683,7 +699,7 @@ do
 			end)
 		end
 		wait(.1)
-		if target.Character:FindFirstChild("Humanoid").Health >1 and STOP ~=3 then
+		if target and target.Character and target.Character:FindFirstChild("Humanoid") and target.Character:FindFirstChild("Humanoid").Health >1 and STOP ~=3 then
 			MKILL(target,STOP+1,P)
 			return
 		end
@@ -710,6 +726,33 @@ do
 			return Notif("This player is whitelisted")
 		end
 		MKILL(player)
+	end
+	function tase_all()
+		local lastteam,Last = plr.TeamColor.Name,getpos()
+		local Table = {}
+		for i,v in pairs(game:GetService("Players"):GetPlayers()) do
+			if v and v.Team ~= game:GetService("Teams").Guards and v ~= plr then
+				Table[#Table+1]={
+					["RayObject"] = Ray.new(Vector3.new(972.877869, 101.489967, 2362.66821), Vector3.new(-53.8579292, -7.45228672, 83.9272766)),
+					["Distance"] = 1,
+					["Cframe"] = CFrame.new(969.60144, 100.734177, 2369.42334, 0.777441919, -0.0313242674, -0.628174186, 1.86264515e-09, 0.998758912, -0.0498036928, 0.628954709, 0.038719479, 0.776477098),
+					["Hit"] = v.Character.HumanoidRootPart
+				}
+			end
+		end
+		if plr.Team ~= game.Teams.Guards then
+			local ohString1 = "Bright blue"
+			task.spawn(function()
+				plr.CharacterAdded:Wait():WaitForChild("HumanoidRootPart").CFrame = Last
+			end)
+			workspace.Remote.TeamEvent:FireServer(ohString1)
+		end
+		repeat task.wait() until game:GetService("Players").LocalPlayer.Backpack:FindFirstChild("Taser")
+		game:GetService("ReplicatedStorage").ShootEvent:FireServer(Table, game:GetService("Players").LocalPlayer.Backpack:FindFirstChild("Taser"))
+		task.spawn(function() game:GetService("ReplicatedStorage").ReloadEvent:FireServer(game:GetService("Players").LocalPlayer.Backpack:FindFirstChild("Taser")) end)
+		wait(.3)
+		Last_Team(lastteam)
+		plr.CharacterAdded:Wait():WaitForChild("HumanoidRootPart").CFrame = Last
 	end
 	function tase(player)
 		print("Called")
@@ -1031,6 +1074,10 @@ do
 	Add_Command("tase",function(Args)
 		local Args = GetArgs(Args)
 		local r = FindPlayer(Args[2])
+		if Args[2] == "all" then
+			tase_all()
+			return
+		end
 		if r then
 			tase(r)
 		end
@@ -1209,7 +1256,17 @@ do
 			end
 		end
 		return game:GetService("TeleportService"):TeleportToPlaceInstance(game['PlaceId'], Ids[math.random(1, #Ids)])
-	end,"Unloads everything")
+	end,"Joins another server")
+	Add_Command("getusers",function(Args)
+		local Args = GetArgs(Args)
+		local Concat = {}
+		for i,v in pairs(game:GetService("Players"):GetChildren()) do
+			if v and v.Character and v.Character:FindFirstChild("Animate") and not v.Character.Animate:FindFirstChild("ScaleDampeningPercent") then
+				Concat[#Concat+1]=v.Name..", "
+			end
+		end
+		Notif("users: "..tostring(table.concat(Concat)),5)
+	end,"Shows all tiger admin users")
 	Add_Command("loopkill",function(Args)
 		local Args = GetArgs(Args)
 		local r =FindPlayer(Args[2])
@@ -1428,6 +1485,11 @@ do
 			end
 			wait()
 			CreateKillPart()
+		else
+			if Parts[1] and Parts[1].Name == "KillAura" then
+				Parts[1]:Destroy()
+				Parts[1] = nil
+			end
 		end
 	end,"Can't touch this but with bigger range")
 	Add_Command("autoitems",function(Args)
@@ -1962,6 +2024,9 @@ plr.CharacterAdded:Connect(function(char)
 		end
 		--//AutoItems
 		repeat task.wait() until char and char:FindFirstChildOfClass("Humanoid")
+		pcall(function()
+			plr.Character.Animate.ScaleDampeningPercent:Destroy()
+		end)
 		task.spawn(function()
 			if unloaded then return end
 			wait(.6)
@@ -1983,6 +2048,7 @@ plr.CharacterAdded:Connect(function(char)
 			plr.Character:FindFirstChild("Head").ChildAdded:Connect(function(a)
 				if a and a:IsA("BillboardGui") and States.AntiArrest then
 					refresh()
+					WaitForRespawn()
 				end
 			end)
 		end)
@@ -1997,6 +2063,7 @@ plr.CharacterAdded:Connect(function(char)
 		--//Killaura part
 		task.spawn(function()
 			repeat task.wait()until plr.Character and char and char:FindFirstChildOfClass("Humanoid")
+			
 			if States.KillAura then
 				CreateKillPart()
 			end
