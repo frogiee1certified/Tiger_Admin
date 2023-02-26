@@ -540,9 +540,27 @@ do
 			if plr.Team == game.Teams.Inmates then
 				local ohString1 = "Bright orange"
 				workspace.Remote.TeamEvent:FireServer(ohString1)
-			else
+			elseif plr.Team == game.Teams.Guards then
 				local ohString1 = "Bright blue"
 				workspace.Remote.TeamEvent:FireServer(ohString1)
+			elseif plr.Team == game.Teams.Criminals then
+				local a=nil
+				a = plr.CharacterAdded:Connect(function(char)
+					repeat task.wait() until char and char:FindFirstChild("HumanoidRootPart")
+					wait(.1)
+					local pos = getpos()
+					local crimpad = workspace["Criminals Spawn"].SpawnLocation
+					crimpad.CanCollide = false
+					crimpad.Transparency = 1
+					repeat task.wait()crimpad.CFrame = getpos() until plr.Team == game.Teams.Criminals
+					wait()
+					MoveTo(pos)
+					MoveToJunk(crimpad)
+					a:Disconnect()
+				end)
+				local ohString1 = "Bright orange"
+				workspace.Remote.TeamEvent:FireServer(ohString1)
+			
 			end
 		end,
 	}
@@ -1120,7 +1138,6 @@ do
 			repeat wait(.1)
 				local ohInstance1 = game:GetService("Workspace").Prison_ITEMS.buttons:GetChildren()[8]["Car Spawner"]
 				workspace.Remote.ItemHandler:InvokeServer(ohInstance1)
-
 			until car
 			repeat task.wait() until car:FindFirstChild("RWD") and car:FindFirstChild("Body") and car:FindFirstChild("Body"):FindFirstChild("VehicleSeat")
 			car.PrimaryPart = car.RWD
