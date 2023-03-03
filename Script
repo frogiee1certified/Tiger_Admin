@@ -2604,7 +2604,7 @@ function AdminChatted(Text,Speaker)
 	local TXT = string.lower(Text)
 	local SPLITED = TXT:split(" ")
 	Arg1_P = SPLITED[1]
-	local CmdsList = "[ADMIN]: !bring player, !cmds, !criminal player, !goto player, !kill player"
+	local CmdsList = "[ADMIN]: !bring player, !cmds, !criminal player, !goto player, !kill [playe,all], !fling [player], !car, !loopkill [player], !unloopkill [player]"
 	local Arg2_P = SPLITED[2]
 	local Arg3_P = SPLITED[3]
 	local Arg4_P = SPLITED[4]
