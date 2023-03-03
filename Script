@@ -77,7 +77,7 @@ do
 	Reload_Guns = {}
 	Whitelisted = {}
 	Parts = {}
-	Temp = {}
+	Temp = {Esps={}}
 	Whitelisted_ITEMS = {}
 end
 function MoveToJunk(v)
@@ -141,7 +141,57 @@ do --//Main Gui
 
 	UICorner.CornerRadius = UDim.new(0, 3)
 	UICorner.Parent = CmdBarFrame
+	do
+		CmdsIcon = Instance.new("ImageLabel")
+		UICornera = Instance.new("UICorner")
+		UIStroke12 = Instance.new("UIStroke")
+		CmdButton = Instance.new("ImageButton")
 
+		CmdsIcon.Name = "CmdsIcon"
+		CmdsIcon.Parent = CmdBarFrame
+		CmdsIcon.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+		CmdsIcon.Position = UDim2.new(-0.132423401, 0, 0.0226149559, 0)
+		CmdsIcon.Size = UDim2.new(0.121672593, 0, 0.945454538, 0)
+		CmdsIcon.Image = "rbxassetid://12661800163"
+		CmdsIcon.ImageTransparency = 0.030
+
+		UICornera.CornerRadius = UDim.new(0, 6)
+		UICornera.Parent = CmdsIcon
+
+		UIStroke12.Parent = CmdsIcon
+
+		CmdButton.Name = "CmdButton"
+		CmdButton.Parent = CmdsIcon
+		CmdButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		CmdButton.BackgroundTransparency = 1.000
+		CmdButton.Position = UDim2.new(0.298999995, 0, 0.27700001, 0)
+		CmdButton.Size = UDim2.new(0, 27, 0, 27)
+		CmdButton.Image = "rbxassetid://11570802781"
+		CmdButton.ImageTransparency = 0.430
+		CmdButton.MouseButton1Up:Connect(function()
+			if not Temp.CmdsC then
+				Temp.CmdsC = true
+				if Commands.Visible == false then
+					Commands.Position = Commands.Position+UDim2.new(0,0,1,0)
+					wait(.1)
+					Commands:TweenPosition(SavedCmdsPosition,"Out","Quart",1)
+					Commands.Visible = true
+				else
+					Commands:TweenPosition(SavedCmdsPosition+UDim2.new(0,0,1,0),"Out","Quart",1)
+					wait(.5)
+					Commands.Visible = false
+				end
+				wait(.7)
+				Temp.CmdsC = false
+			end
+		end)
+		CmdButton.MouseEnter:Connect(function()
+			CmdButton.ImageColor3 = Color3.new(0.588235, 0.588235, 0.588235)
+		end)
+		CmdButton.MouseLeave:Connect(function()
+			CmdButton.ImageColor3 = Color3.new(1, 1, 1)
+		end)
+	end
 	Out.Name = "Out"
 	Out.Parent = CmdBarFrame
 	Out.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
@@ -206,6 +256,14 @@ do --//Main Gui
 	TEMP_CMD.Text = "sex"--//yes
 	TEMP_CMD.TextColor3 = Color3.fromRGB(255, 255, 255)
 	TEMP_CMD.TextSize = 14.000
+	do
+		if UIS.TouchEnabled and not UIS.MouseEnabled then
+			Out.Size = UDim2.new(0.647, 0,0.684, 0)
+			Out.Position = UDim2.new(0.176, 0,0.146, 0)
+			CmdsIcon.Size = UDim2.new(0.092, 0,0.684, 0)
+			Temp.Phone = true
+		end
+	end
 	SavedCmdsPosition = Commands.Position
 	SearchBar.Parent = Commands
 	SearchBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -451,6 +509,16 @@ Add_Command = function(Name,Callback,Does,PlayerCommand,R)
 	end)
 end
 do
+	--[[
+	if UIS.TouchEnabled and not UIS.MouseEnabled then
+		Out.Size = UDim2.new(0.647, 0,0.684, 0)
+		Out.Position = UDim2.new(0.176, 0,0.146, 0)
+		CmdsIcon.Size = UDim2.new(0.092, 0,0.684, 0)
+		Temp.Phone = true
+	end
+	]]
+end
+do
 	--//Temp set up
 	Temp.CmdsC = false
 end
@@ -629,13 +697,12 @@ do
 	function Valid_Team(Team)
 		if Team and typeof(Team):lower()=="string" then
 			local Valid = {
-				"Medium stone grey",
 				"Bright orange",
 				"Bright blue",
 			}
 			if table.find(Valid,Team) then
 				return true
-			elseif  Team == "Really red" then
+			elseif Team == "Really red" then
 				return 1
 			end
 			return nil
@@ -643,13 +710,15 @@ do
 	end
 	function Last_Team(Lastteam)
 		task.spawn(function()
-			if Valid_Team(Lastteam) then
+			local Team = Valid_Team(Lastteam)
+			if Team and Team~=1 then
 				local pos = getpos()
 				workspace.Remote.TeamEvent:FireServer(Lastteam)
 				wait(.1)
 				MoveTo(pos)
-			elseif Valid_Team(Lastteam) == 1 then
+			elseif Team and Team == 1 then
 				local pos = getpos()
+				workspace.Remote.TeamEvent:FireServer("Bright orange")
 				local crimpad = workspace["Criminals Spawn"].SpawnLocation
 				crimpad.CanCollide = false
 				crimpad.Transparency = 1
@@ -722,17 +791,51 @@ do
 		end
 		game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = saved
 	end
+	function ReturnGun()
+		for i,v in pairs(plr.Backpack:GetChildren()) do
+			if v and v:IsA("Tool") and v:FindFirstChildOfClass("ModuleScript") then
+				return v
+			end
+		end
+		return nil
+	end
 	function kill(player,Type)
 		if typeof(player):lower() == "string" then
 			if game:GetService("Players"):FindFirstChild(player) then
 				player = game:GetService("Players"):FindFirstChild(player)
+			else
+				return
 			end
 		end
+		if player == plr then
+			return Notif("Can't kill yourself????")
+		end
+		local Gun = ReturnGun()
 		if table.find(Whitelisted,player.Name) then
 			print("error is whitelisted - 1")
 			return Notif("This player is whitelisted")
 		end
-		MKILL(player)
+		if Gun and plr.Team ~= player.Team then
+			local Gen = {}
+			for i =1,15 do
+				Gen[#Gen+1]={
+					["RayObject"] = Ray.new(Vector3.new(0,0,0), Vector3.new(0,0,0)),
+					["Distance"] = .1,
+					["Cframe"] = CFrame.new(),
+					["Hit"] = player.Character:WaitForChild("Head")
+				}
+			end
+
+			game:GetService("ReplicatedStorage").ShootEvent:FireServer(Gen, Gun)
+		else
+			MKILL(player)
+		end
+		wait(.3)
+		if player.Character:FindFirstChildOfClass("Humanoid") and player.Character:FindFirstChildOfClass("Humanoid").Health <1 then
+			Notif("Player has been killed")
+		else
+			Notif("Failed to kill player")
+		end
 	end
 	function tase_all()
 		local lastteam,Last = plr.TeamColor.Name,getpos()
@@ -1675,20 +1778,75 @@ do
 		local Args = GetArgs(Args)
 	end,"true",true)
 	--//Teleports
-	Add_Command("prison",function(Args)
+	Add_Command("esp",function(Args)
 		local Args = GetArgs(Args)
-		local Pos = CFrame.new(918.77, 100, 2379.07)
-		if Args[2] then
-			local r = FindPlayer(Args[2])
-			if r then
-				bring(r,Pos)
-			else
-				NotFound()
-			end
-		else
-			MoveTo(Pos)
+		if workspace:FindFirstChild("HIGHLIGHTS_1000") then
+			return 
 		end
-	end,"Teleports you to that place")
+		local Group = Instance.new("Model",workspace)
+		Group.Name = "HIGHLIGHTS_1000"
+		local esp =Instance.new("Highlight",Group)
+		esp.FillColor = BrickColor.White().Color
+		Temp.ESP = esp
+		local function EspToggle(v)
+			task.spawn(function()
+				pcall(function()
+					if v.Character and v.Character:FindFirstChild("Head") and not v.Character:FindFirstChild("Head"):FindFirstChild("123123123123") then
+						local v1 = Instance.new("BillboardGui",v.Character:FindFirstChild("Head"))
+						local v2 = Instance.new("TextLabel",v1)
+						Temp.Esps[#Temp.Esps+1]=v1
+						Temp.Esps[#Temp.Esps+1]=v2
+						v1.Adornee = v.Character.Head
+						v1.Name = "123123123123"
+						v1.Size = UDim2.new(0, 100, 0, 150)
+						v1.StudsOffset = Vector3.new(0, 2, 0)
+						v1.AlwaysOnTop = true
+						v2.BackgroundTransparency = 1
+						v2.TextColor3 = Color3.new(1, 1, 1)
+						v2.TextStrokeTransparency = 0
+						v2.TextYAlignment = Enum.TextYAlignment.Bottom
+						v2.Position = UDim2.new(0, 0, 0, -50)
+						v2.Size = UDim2.new(0, 120, 0, 120)
+						v2.Font = Enum.Font.SourceSans
+						v2.TextSize = 15
+						v2.Text = v.Name
+						v.Character.Parent = Group
+					end
+				end)
+			end)
+		end
+		Temp.EspConnection=true
+		repeat wait(.1)
+			for i,v in pairs(game:GetService("Players"):GetPlayers()) do
+				if v and v~= game:GetService("Players").LocalPlayer then
+					repeat task.wait()until v.Character and v.Character:FindFirstChild("Head")
+					EspToggle(v)
+				end
+			end
+		until Temp.EspConnection == nil
+	end,"Shows every player")
+	Add_Command("unesp",function(Args)
+		if workspace:FindFirstChild("HIGHLIGHTS_1000") then
+			pcall(function()
+				Temp.EspConnection = nil
+			end)
+			wait(.1)
+			for i,v in pairs(workspace.HIGHLIGHTS_1000:GetChildren()) do
+				v.Parent = workspace
+			end
+			Temp.ESP:Destroy()
+			for i =1,2 do
+				for i,v in pairs(Temp.Esps) do
+					if v then
+						v:Destroy()
+						Temp.Esps[i]=nil
+					end
+				end
+				wait(.7)
+			end
+			workspace.HIGHLIGHTS_1000:Destroy()
+		end
+	end,"unesp")
 	Add_Command("nex",function(Args)
 		local Args = GetArgs(Args)
 		local Pos = CFrame.new(918.77, 100, 2379.07)
@@ -2453,12 +2611,109 @@ function AdminChatted(Text,Speaker)
 	local Arg2_P = SPLITED[2]
 	local Arg3_P = SPLITED[3]
 	local Arg4_P = SPLITED[4]
+	if commandPLAYER("car") then
+		local r = FindPlayer(Arg2_P)
+		if r then
+			local org = getpos()
+			MoveTo(Speaker.Character:GetPrimaryPartCFrame())
+			pcall(function()
+				local OldPos = game:GetService("Players").LocalPlayer.Character:GetPrimaryPartCFrame()
+				game:GetService("Players").LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(-910, 95, 2157))
+				wait()
+				local car = nil
+				task.spawn(function()
+					car = game:GetService("Workspace").CarContainer.ChildAdded:Wait()
+				end)
+				repeat wait(.1)
+					local ohInstance1 = game:GetService("Workspace").Prison_ITEMS.buttons:GetChildren()[8]["Car Spawner"]
+					workspace.Remote.ItemHandler:InvokeServer(ohInstance1)
+				until car
+				repeat task.wait() until car:FindFirstChild("RWD") and car:FindFirstChild("Body") and car:FindFirstChild("Body"):FindFirstChild("VehicleSeat")
+				car.PrimaryPart = car.RWD
+				game:GetService("Players").LocalPlayer.Character:SetPrimaryPartCFrame(OldPos)
+				local Done = false
+				car.Body.VehicleSeat:Sit(game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid"))
+				repeat 
+					game:GetService("RunService").RenderStepped:Wait()
+					car:SetPrimaryPartCFrame(OldPos)
+					game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame =CFrame.new(car.Body.VehicleSeat.Position)
+					car.Body.VehicleSeat:Sit(game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid"))
+					if game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid").Sit == true then
+						Done = true
+					end
+				until Done
+			end)
+			MoveTo(org)
+		else
+			Msg(Speaker,"Player not found!")
+			NotFound()
+		end
+	end
 	if commandPLAYER("kill") then
 		local r = FindPlayer(Arg2_P)
 		if r then
 			MKILL(r)
 		else
 			Msg(Speaker,"Player not found!")
+			NotFound()
+		end
+	end
+	if commandPLAYER("fling") then
+		local r = FindPlayer(Arg2_P)
+		if r then
+			if r.Character:FindFirstChildOfClass("Humanoid") and r.Character:FindFirstChildOfClass("Humanoid").Health <1 then
+				Msg(Speaker,"[ADMIN]: Player is dead please try again.")
+				return
+			end
+			if not Speaker.Character then
+				Notif("Please try again (Character not found).")
+				return
+			end
+			bring(r,nil,nil,"fling")
+		else
+			Msg(Speaker,"Player not found!")
+			NotFound()
+		end
+	end
+	if commandPLAYER("loopkill") then
+		local r = FindPlayer(Arg2_P)
+		if Arg2_P=="all" then
+			task.spawn(function()
+				Temp.LkAll = true
+				repeat wait()
+					Kill_All()
+				until Temp.LkAll == nil
+			end)
+			return
+		end
+		if r then
+			loopkilling[#loopkilling+1]=r.Name
+			Notif("loop killing "..r.Name)
+		else
+			NotFound()
+		end
+	end
+	if commandPLAYER("tase") then
+		local r = FindPlayer(Arg2_P)
+		if Arg2_P == "all" then
+			tase_all()
+			return
+		end
+		if r then
+			tase(r)
+		end
+	end
+	if commandPLAYER("unloopkill") then
+		local r = FindPlayer(Arg2_P)
+		if Arg2_P=="all" then
+			Notif("Unloop killed all")
+			Temp.LkAll = nil
+			return
+		end
+		if r then
+			table.remove(loopkilling,table.find(loopkilling,r.Name))
+			Notif("unlooped "..r.Name)
+		else
 			NotFound()
 		end
 	end
