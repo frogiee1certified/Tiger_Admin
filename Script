@@ -8,10 +8,7 @@
     Created by H17S3
     --CREDITS
 ]]
---[[
-!jump number
-!admin - !kill
-]]
+
 repeat task.wait() until game:IsLoaded()
 do--//Instances
 	Debug = false
