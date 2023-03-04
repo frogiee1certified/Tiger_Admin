@@ -596,6 +596,23 @@ do
 			end
 		end
 	end
+	function ChangeTeam(Team)
+		local a,b,c= nil,getpos(),workspace.CurrentCamera.CFrame
+		a =plr.CharacterAdded:Connect(function(Char)
+			task.spawn(function()
+				workspace.CurrentCamera:GetPropertyChangedSignal("CFrame"):Wait()
+				for i =1,5 do
+					workspace.CurrentCamera.CFrame = c
+				end
+			end)
+			Char:WaitForChild("HumanoidRootPart")
+			MoveTo(b)
+			a:Disconnect()
+		end)
+		local ohString1 = Team.TeamColor.Name
+		workspace.Remote.TeamEvent:FireServer(ohString1)
+		return
+	end
 	function unsit()
 		plr.Character:FindFirstChildOfClass("Humanoid").Sit = false
 	end
@@ -707,21 +724,28 @@ do
 	end
 	function Last_Team(Lastteam)
 		task.spawn(function()
+			local a,b,c= nil,getpos(),workspace.CurrentCamera.CFrame
+			a =plr.CharacterAdded:Connect(function(Char)
+				task.spawn(function()
+					workspace.CurrentCamera:GetPropertyChangedSignal("CFrame"):Wait()
+					for i =1,5 do
+						workspace.CurrentCamera.CFrame = c
+					end
+				end)
+				Char:WaitForChild("HumanoidRootPart")
+				MoveTo(b)
+				a:Disconnect()
+			end)
 			local Team = Valid_Team(Lastteam)
 			if Team and Team~=1 then
 				local pos = getpos()
 				workspace.Remote.TeamEvent:FireServer(Lastteam)
-				wait(.1)
-				MoveTo(pos)
 			elseif Team and Team == 1 then
-				local pos = getpos()
 				workspace.Remote.TeamEvent:FireServer("Bright orange")
 				local crimpad = workspace["Criminals Spawn"].SpawnLocation
 				crimpad.CanCollide = false
 				crimpad.Transparency = 1
 				repeat task.wait()crimpad.CFrame = getpos() until plr.Team == game.Teams.Criminals
-				wait()
-				MoveTo(pos)
 				MoveToJunk(crimpad)
 			end
 		end)
@@ -787,6 +811,63 @@ do
 			end
 		end
 		game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = saved
+	end
+	function keycard()
+		if plr.Character:FindFirstChild("Key card") or plr.Backpack:FindFirstChild("Key card") then
+			return Notif("You already have a keycard!")
+		end
+		if game:GetService("Workspace")["Prison_ITEMS"].single:FindFirstChild("Key card") then
+			local a =getpos()
+			local Key = workspace.Prison_ITEMS.single["Key card"].ITEMPICKUP
+			MoveTo(CFrame.new(workspace.Prison_ITEMS.single["Key card"].ITEMPICKUP.Position))
+			wait()
+			repeat wait(.1)
+				local a =pcall(function()
+					local Key = workspace.Prison_ITEMS.single["Key card"].ITEMPICKUP
+					game.Workspace.Remote["ItemHandler"]:InvokeServer(Key)
+					MoveTo(CFrame.new(workspace.Prison_ITEMS.single["Key card"].ITEMPICKUP.Position+Vector3.new(0,3,0)))
+				end)
+				if not a then
+					break
+				end
+			until plr.Backpack:FindFirstChild("Key card")
+			wait()
+			MoveTo(a)
+			return
+		end
+		local a,b= getpos(),plr.TeamColor.Name
+		local HadOn = States.autore
+		if HadOn then
+			States.autore = false
+		end
+		ChangeTeam(game.Teams.Guards)
+		repeat wait(.2)
+			pcall(function()
+				plr.Character:FindFirstChildOfClass("Humanoid").Health =0
+				wait(.2)
+				ChangeTeam(game.Teams.Guards)
+			end)
+		until game:GetService("Workspace")["Prison_ITEMS"].single:FindFirstChild("Key card")
+		if HadOn then
+			States.autore = true
+		end
+		Last_Team(b)
+		wait(.1)
+		MoveTo(CFrame.new(workspace.Prison_ITEMS.single["Key card"].ITEMPICKUP.Position))
+		wait()
+		repeat wait(.1)
+			local a =pcall(function()
+				local Key = workspace.Prison_ITEMS.single["Key card"].ITEMPICKUP
+				game.Workspace.Remote["ItemHandler"]:InvokeServer(Key)
+				MoveTo(CFrame.new(workspace.Prison_ITEMS.single["Key card"].ITEMPICKUP.Position+Vector3.new(0,3,0)))
+			end)
+			if not a then
+				break
+			end
+		until plr.Backpack:FindFirstChild("Key card")
+		wait()
+		MoveTo(a)
+		
 	end
 	function ReturnGun()
 		for i,v in pairs(plr.Backpack:GetChildren()) do
@@ -1153,6 +1234,31 @@ do
 			game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId, game:GetService("Players").LocalPlayer)
 		end
 	end,"Rejoins the server")
+	Add_Command("opendoors",function(Args)
+		local Args = GetArgs(Args)
+		local LastTeam =plr.TeamColor.Name
+		ChangeTeam(game.Teams.Guards)
+		wait(.7)
+		task.spawn(function()
+			local Arg_1 = game:GetService("Workspace")["Prison_ITEMS"].buttons["Prison Gate"]["Prison Gate"]
+			local Event = game:GetService("Workspace").Remote.ItemHandler
+			Event:InvokeServer(Arg_1)
+		end)
+		for i,v in pairs(game:GetService("Workspace").Doors:GetChildren()) do
+			if v then
+				if v:FindFirstChild("block") and v:FindFirstChild("block"):FindFirstChild("hitbox") then
+					firetouchinterest(game.Players.LocalPlayer.Character.HumanoidRootPart,v.block.hitbox,0)
+					firetouchinterest(game.Players.LocalPlayer.Character.HumanoidRootPart,v.block.hitbox,1)
+				end
+			end
+		end
+		wait(1)
+		Last_Team(LastTeam)
+	end,"Opens every door")
+	Add_Command("key",function(Args)
+		local Args = GetArgs(Args)
+		keycard()
+	end,"Opens every door")
 	Add_Command("view",function(Args)
 		local Args = GetArgs(Args)
 		local r = FindPlayer(Args[2])
@@ -1438,6 +1544,30 @@ do
 			NotFound()
 		end
 	end,"Admins a player","PLAYER_COMMAND")
+	Add_Command("laggun",function(Args)
+		local Args = GetArgs(Args)
+		if plr.Character:FindFirstChildOfClass("Tool") then
+			local Tool = plr.Character:FindFirstChildOfClass("Tool")
+			if not Tool:FindFirstChild("GunStates") then
+				return Notif("Needs to be a gun!")
+			end
+			local cc = require(Tool.GunStates)
+			cc["Damage"] = 9e9
+			cc["FireRate"] = -math.huge
+			cc["Range"] = math.huge
+			cc["MaxAmmo"] = math.huge
+			cc["StoredAmmo"] = math.huge
+			cc["AmmoPerClip"] = math.huge
+			cc["CurrentAmmo"] = math.huge
+			if Tool.Name ~= "Remington 870" then
+				cc["Bullets"] = 100
+				cc["AutoFire"] = true
+			end
+			Reload_Guns[#Reload_Guns]=Tool
+		else
+			Notif("You need to hold the tool you want to mod!")
+		end
+	end,"you shoot server gone")
 	Add_Command("modgun",function(Args)
 		local Args = GetArgs(Args)
 		if plr.Character:FindFirstChildOfClass("Tool") then
@@ -1673,11 +1803,7 @@ do
 	end,"Can't touch this","TOGGLE_COMMAND")
 	Add_Command("guard",function(Args)
 		local Args = GetArgs(Args)
-		local pos = getpos()
-		local ohString1 = "Bright blue"
-		workspace.Remote.TeamEvent:FireServer(ohString1)
-		wait(.1)
-		MoveTo(pos)
+		ChangeTeam(game.Teams.Guards)
 	end,"puts you into guards team")
 	Add_Command("crashserver",function(Args)
 		local Args = GetArgs(Args)
@@ -1726,11 +1852,7 @@ do
 	end,"lags the server")
 	Add_Command("inmate",function(Args)
 		local Args = GetArgs(Args)
-		local pos = getpos()
-		local ohString1 = "Bright orange"
-		workspace.Remote.TeamEvent:FireServer(ohString1)
-		wait(.1)
-		MoveTo(pos)
+		ChangeTeam(game.Teams.Inmates)
 	end,"puts you into guards team")
 	Add_Command("noinvite",function(Args)
 		local Settings = {
