@@ -64,6 +64,7 @@ do
 		AntiPunch = false,
 		AntiTase = false,
 		FastPunch = false,
+		ClickArrest = false,
 		Godmode = false,
 		Antibring = true,
 		AntiTouch = false,
@@ -597,6 +598,17 @@ do
 		end
 	end
 	function ChangeTeam(Team)
+		if Team == game.Teams.Criminals then
+			local pos = getpos()
+			local crimpad = workspace["Criminals Spawn"].SpawnLocation
+			crimpad.CanCollide = false
+			crimpad.Transparency = 1
+			repeat task.wait()crimpad.CFrame = getpos() until plr.Team == game.Teams.Criminals
+			wait()
+			MoveTo(pos)
+			MoveToJunk(crimpad)
+			return
+		end
 		local a,b,c= nil,getpos(),workspace.CurrentCamera.CFrame
 		a =plr.CharacterAdded:Connect(function(Char)
 			task.spawn(function()
@@ -634,8 +646,13 @@ do
 	}
 	function BadArea(Player)
 		local mod = require(game.ReplicatedStorage["Modules_client"]["RegionModule_client"])
-		if mod.findRegion(Player.Character) then
-			mod = mod.findRegion(Player.Character)["Name"]
+		local a =pcall(function()
+			if mod.findRegion(Player.Character) then
+				mod = mod.findRegion(Player.Character)["Name"]
+			end
+		end)
+		if not a then
+			return
 		end
 		for i,v in pairs(game:GetService("ReplicatedStorage").PermittedRegions:GetChildren()) do
 			if v and mod == v.Value then
@@ -708,6 +725,7 @@ do
 		end
 		return Generated
 	end
+	
 	function Valid_Team(Team)
 		if Team and typeof(Team):lower()=="string" then
 			local Valid = {
@@ -803,13 +821,35 @@ do
 		MoveTo(saved)
 	end
 	function Kill_All(Team)
+		local a = GetTeam()
 		local saved = getpos()
 		local Team = GetTeam()
+		ChangeTeam(game.Teams.Criminals)
+		GetGun("M9")
+		repeat task.wait() until plr.Backpack:FindFirstChild("M9")
+		local Gun = plr.Backpack:FindFirstChild("M9")
+		local Gen = {}
 		for i,v in pairs(game:GetService("Players"):GetPlayers()) do
-			if v and v~= plr and not table.find(Whitelisted,v.Name) then
+			if not table.find(Whitelisted,v.Name) and v ~= plr then
+				for i =1,10 do
+					Gen[#Gen+1]={
+						["RayObject"] = Ray.new(Vector3.new(0,0,0), Vector3.new(0,0,0)),
+						["Distance"] = .1,
+						["Cframe"] = CFrame.new(),
+						["Hit"] = v.Character:WaitForChild("Head")
+					}
+				end
+			end
+		end
+		game:GetService("ReplicatedStorage").ShootEvent:FireServer(Gen, Gun)
+		for i,v in pairs(game:GetService("Players"):GetPlayers()) do
+			if v and v~= plr and not table.find(Whitelisted,v.Name) and v.Team==game.Teams.Criminals then
 				MKILL(v)
 			end
 		end
+		wait(.1)
+		Last_Team(a)
+		wait(.4)
 		game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = saved
 	end
 	function keycard()
@@ -1710,6 +1750,10 @@ do
 			NotFound()
 		end
 	end,"teleports to a player")
+	Add_Command("clickarrest",function(Args)
+		local Args = GetArgs(Args)
+		Toggle(Args[2],"ClickArrest")
+	end,"Click to arrest people","TOGGLE_COMMAND")
 	Add_Command("autorespawn",function(Args)
 		local Args = GetArgs(Args)
 		Toggle(Args[2],"autore")
@@ -1766,6 +1810,37 @@ do
 			end
 		end
 	end,"Trys to prevent tasing","TOGGLE_COMMAND")
+	Add_Command("arrest",function(Args)
+		local Args = GetArgs(Args)
+		if Args[2] then
+			if Args[2] == "all" then
+				local l = getpos()
+				for i,v in pairs(game:GetService("Players"):GetChildren()) do
+					if v and v.Team ~= game.Teams.Guards and v.Team ~= game.Teams.Neutral and v ~=plr and BadArea(v) or v.Team == game.Teams.Criminals then
+						repeat wait(.2)
+							local a=pcall(function()
+								local ohInstance1 = v.Character["HumanoidRootPart"]
+								workspace.Remote.arrest:InvokeServer(ohInstance1)
+								MoveTo(v.Character["HumanoidRootPart"].CFrame)
+							end)
+							if v.Team == game.Teams.Guards or not BadArea(v) then
+								break
+							end
+							if not a then
+								break
+							end
+						until v.Character["Head"]:FindFirstChildOfClass("BillboardGui")
+						
+					end
+				end
+				wait(.1)
+				MoveTo(l)
+			else
+				local r = FindPlayer(Args[2])
+				
+			end
+		end
+	end,"Arrests a person or all","PLAYER_COMMAND")
 	Add_Command("autore",function(Args)
 		local Args = GetArgs(Args)
 		Toggle(Args[2],"autore")
@@ -2883,6 +2958,18 @@ function AdminChatted(Text,Speaker)
 	end
 end
 
+plr:GetMouse().Button1Up:Connect(function()
+	if States.ClickArrest then
+		local Target = plr:GetMouse().Target
+		if Target and Target.Parent and Target.Parent:FindFirstChildOfClass("Humanoid") and game:GetService("Players"):FindFirstChild(Target.Parent.Name) then
+			local TargetModelPlr = game:GetService("Players"):FindFirstChild(Target.Parent.Name)
+			if TargetModelPlr.Team ~= game:GetService("Teams").Guards then
+				local ohInstance1 = Target
+				workspace.Remote.arrest:InvokeServer(ohInstance1)
+			end
+		end
+	end
+end)
 local DefaultChatSystemChatEvents = game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents
 DefaultChatSystemChatEvents.OnMessageDoneFiltering.OnClientEvent:Connect(function(MessageData, ChannelName)
 	if unloaded then return end
