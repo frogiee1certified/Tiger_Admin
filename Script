@@ -1334,6 +1334,11 @@ do
 		local Args = GetArgs(Args)
 		keycard()
 	end,"true",true)
+	Add_Command("btools",function(Args)
+		local Args = GetArgs(Args)
+		Instance.new("HopperBin",plr.Backpack).BinType = 3
+		Instance.new("HopperBin",plr.Backpack).BinType = 4
+	end,"client sided btools that you can only see")
 	Add_Command("key",function(Args)
 		local Args = GetArgs(Args)
 		keycard()
