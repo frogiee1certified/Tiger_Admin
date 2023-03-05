@@ -725,7 +725,7 @@ do
 		end
 		return Generated
 	end
-	
+
 	function Valid_Team(Team)
 		if Team and typeof(Team):lower()=="string" then
 			local Valid = {
@@ -820,31 +820,44 @@ do
 		end
 		MoveTo(saved)
 	end
-	function Kill_All(Team)
+	function Kill_All(TeamS)
 		local a = GetTeam()
 		local saved = getpos()
 		local Team = GetTeam()
-		ChangeTeam(game.Teams.Criminals)
+		if not TeamS then
+			ChangeTeam(game.Teams.Criminals)
+		end
 		GetGun("M9")
 		repeat task.wait() until plr.Backpack:FindFirstChild("M9")
 		local Gun = plr.Backpack:FindFirstChild("M9")
 		local Gen = {}
+		if TeamS then
+			if TeamS == game.Teams.Guards then
+				ChangeTeam(game.Teams.Inmates)
+			elseif TeamS == game.Teams.Inmates then
+				ChangeTeam(game.Teams.Criminals)
+			end
+		end
 		for i,v in pairs(game:GetService("Players"):GetPlayers()) do
 			if not table.find(Whitelisted,v.Name) and v ~= plr then
-				for i =1,10 do
-					Gen[#Gen+1]={
-						["RayObject"] = Ray.new(Vector3.new(0,0,0), Vector3.new(0,0,0)),
-						["Distance"] = .1,
-						["Cframe"] = CFrame.new(),
-						["Hit"] = v.Character:WaitForChild("Head")
-					}
+				if (TeamS and v.Team == TeamS) or not TeamS then
+					for i =1,10 do
+						Gen[#Gen+1]={
+							["RayObject"] = Ray.new(Vector3.new(0,0,0), Vector3.new(0,0,0)),
+							["Distance"] = .1,
+							["Cframe"] = CFrame.new(),
+							["Hit"] = v.Character:WaitForChild("Head")
+						}
+					end
 				end
 			end
 		end
 		game:GetService("ReplicatedStorage").ShootEvent:FireServer(Gen, Gun)
-		for i,v in pairs(game:GetService("Players"):GetPlayers()) do
-			if v and v~= plr and not table.find(Whitelisted,v.Name) and v.Team==game.Teams.Criminals then
-				MKILL(v)
+		if not TeamS then
+			for i,v in pairs(game:GetService("Players"):GetPlayers()) do
+				if v and v~= plr and not table.find(Whitelisted,v.Name) and v.Team==game.Teams.Criminals then
+					MKILL(v)
+				end
 			end
 		end
 		wait(.1)
@@ -1030,12 +1043,14 @@ do
 		end)
 	end
 	function MoveTo(Pos,t)
-		if typeof(Pos):lower() == "position" then
-			Pos = CFrame.new(Pos)
-		end
-		for i =1,3 do
-			plr.Character:FindFirstChild("HumanoidRootPart").CFrame = Pos
-		end
+		pcall(function()
+			if typeof(Pos):lower() == "position" then
+				Pos = CFrame.new(Pos)
+			end
+			for i =1,3 do
+				plr.Character:FindFirstChild("HumanoidRootPart").CFrame = Pos
+			end
+		end)
 	end
 	function getpos()
 		return plr.Character:FindFirstChild("HumanoidRootPart").CFrame
@@ -1295,10 +1310,34 @@ do
 		wait(1)
 		Last_Team(LastTeam)
 	end,"Opens every door")
+	Add_Command("prefix",function(Args)
+		local Args = GetArgs(Args)
+		if Args[2] and tostring(Args[2]) then
+			Prefix = tostring(Args[2])
+			for i,v in pairs(TableCommands) do
+				if v then
+					v.Name = Prefix..string.sub(v.Name,2,#v.Name)
+				end
+			end
+			for i,v in pairs(CommandsRawList) do
+				if v then
+					v.Text = Prefix..string.sub(v.Text,2,#v.Text)
+				end
+			end
+			Notif("prefix set to "..Args[2])
+		else
+			Notif("no prefix selected?")
+		end
+		
+	end,"sets a prefix")
+	Add_Command("keycard",function(Args)
+		local Args = GetArgs(Args)
+		keycard()
+	end,"true",true)
 	Add_Command("key",function(Args)
 		local Args = GetArgs(Args)
 		keycard()
-	end,"Opens every door")
+	end,"Gives you a keycard")
 	Add_Command("view",function(Args)
 		local Args = GetArgs(Args)
 		local r = FindPlayer(Args[2])
@@ -1524,10 +1563,12 @@ do
 		local r =FindPlayer(Args[2])
 		if Args[2]=="all" then
 			task.spawn(function()
-				Temp.LkAll = true
-				repeat wait()
-					Kill_All()
-				until Temp.LkAll == nil
+				if Temp.LkAll==false then
+					Temp.LkAll = true
+					repeat wait()
+						Kill_All()
+					until Temp.LkAll == nil
+				end
 			end)
 			return
 		end
@@ -1817,7 +1858,49 @@ do
 				local l = getpos()
 				for i,v in pairs(game:GetService("Players"):GetChildren()) do
 					if v and v.Team ~= game.Teams.Guards and v.Team ~= game.Teams.Neutral and v ~=plr and BadArea(v) or v.Team == game.Teams.Criminals then
+						local d= false
+						task.spawn(function()
+							repeat task.wait()
+								pcall(function()
+									MoveTo(v.Character["HumanoidRootPart"].CFrame*CFrame.new(0,0,-3))
+								end)
+							until d
+						end)
 						repeat wait(.2)
+							local a=pcall(function()
+								local ohInstance1 = v.Character["HumanoidRootPart"]
+								workspace.Remote.arrest:InvokeServer(ohInstance1)
+							end)
+							if v.Team == game.Teams.Guards or not BadArea(v) then
+								break
+							end
+							if not a then
+								break
+							end
+							unsit()
+						until v.Character["Head"]:FindFirstChildOfClass("BillboardGui")
+						d = true
+					end
+				end
+				unsit()
+				wait(.1)
+				MoveTo(l)
+			else
+				local r = FindPlayer(Args[2])
+				if r  then
+					local v = r
+					local p = getpos()
+					if v and v.Team ~= game.Teams.Guards and v.Team ~= game.Teams.Neutral and v ~=plr and BadArea(v) or v.Team == game.Teams.Criminals then
+						local d= false
+						task.spawn(function()
+							repeat task.wait()
+								pcall(function()
+									MoveTo(v.Character["HumanoidRootPart"].CFrame*CFrame.new(0,0,-3))
+								end)
+							until d
+						end)
+						repeat wait(.2)
+							unsit()
 							local a=pcall(function()
 								local ohInstance1 = v.Character["HumanoidRootPart"]
 								workspace.Remote.arrest:InvokeServer(ohInstance1)
@@ -1830,14 +1913,16 @@ do
 								break
 							end
 						until v.Character["Head"]:FindFirstChildOfClass("BillboardGui")
-						
+						d = true
+					else
+						Notif("Can't arrest this player!")
 					end
+					unsit()
+					wait(.1)
+					MoveTo(p)
+				else
+					NotFound()
 				end
-				wait(.1)
-				MoveTo(l)
-			else
-				local r = FindPlayer(Args[2])
-				
 			end
 		end
 	end,"Arrests a person or all","PLAYER_COMMAND")
@@ -2840,6 +2925,18 @@ function AdminChatted(Text,Speaker)
 	end
 	if commandPLAYER("kill") then
 		local r = FindPlayer(Arg2_P)
+		local Check1 = function(ar)
+			for i,v in pairs(game:GetService("Teams"):GetChildren()) do
+				if v and v.Name:lower() == ar:lower() then
+					return v
+				end
+			end
+			return nil
+		end
+		if Arg2_P and Check1(Arg2_P) then
+			Kill_All(Check1(Arg2_P))
+			return
+		end
 		if r then
 			MKILL(r)
 		else
@@ -2868,10 +2965,12 @@ function AdminChatted(Text,Speaker)
 		local r = FindPlayer(Arg2_P)
 		if Arg2_P=="all" then
 			task.spawn(function()
-				Temp.LkAll = true
-				repeat wait()
-					Kill_All()
-				until Temp.LkAll == nil
+				if Temp.LkAll==false then
+					Temp.LkAll = true
+					repeat wait()
+						Kill_All()
+					until Temp.LkAll == nil
+				end
 			end)
 			return
 		end
