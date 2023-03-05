@@ -479,7 +479,7 @@ Add_Command = function(Name,Callback,Does,PlayerCommand,R)
 			elseif PlayerCommand == "NUMBER_COMMAND" then
 				PlayerCommand = " NUMBER"
 			elseif PlayerCommand == "STRING_COMMAND" then
-				PlayerCommand = " STRING_COMMAND"
+				PlayerCommand = " STRING"
 			end
 			if PlayerCommand == nil then
 				PlayerCommand=""
@@ -1329,7 +1329,7 @@ do
 			Notif("no prefix selected?")
 		end
 		
-	end,"sets a prefix")
+	end,"sets a prefix","STRING_COMMAND")
 	Add_Command("keycard",function(Args)
 		local Args = GetArgs(Args)
 		keycard()
