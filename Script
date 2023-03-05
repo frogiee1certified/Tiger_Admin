@@ -867,7 +867,7 @@ do
 		until plr.Backpack:FindFirstChild("Key card")
 		wait()
 		MoveTo(a)
-		
+
 	end
 	function ReturnGun()
 		for i,v in pairs(plr.Backpack:GetChildren()) do
@@ -2726,47 +2726,42 @@ function AdminChatted(Text,Speaker)
 	local TXT = string.lower(Text)
 	local SPLITED = TXT:split(" ")
 	Arg1_P = SPLITED[1]
-	local CmdsList = "[ADMIN]: !bring player, !cmds, !criminal player, !goto player, !kill [playe,all], !fling [player], !car, !loopkill [player], !unloopkill [player]"
+	local CmdsList = "[ADMIN]: !bring player, !cmds, !criminal player, !goto player, !kill [player,all], !fling [player], !car, !loopkill [player], !unloopkill [player], !tase [player,all]"
 	local Arg2_P = SPLITED[2]
 	local Arg3_P = SPLITED[3]
 	local Arg4_P = SPLITED[4]
 	if commandPLAYER("car") then
-		local r = FindPlayer(Arg2_P)
-		if r then
-			local org = getpos()
-			MoveTo(Speaker.Character:GetPrimaryPartCFrame())
-			pcall(function()
-				local OldPos = game:GetService("Players").LocalPlayer.Character:GetPrimaryPartCFrame()
-				game:GetService("Players").LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(-910, 95, 2157))
-				wait()
-				local car = nil
-				task.spawn(function()
-					car = game:GetService("Workspace").CarContainer.ChildAdded:Wait()
-				end)
-				repeat wait(.1)
-					local ohInstance1 = game:GetService("Workspace").Prison_ITEMS.buttons:GetChildren()[8]["Car Spawner"]
-					workspace.Remote.ItemHandler:InvokeServer(ohInstance1)
-				until car
-				repeat task.wait() until car:FindFirstChild("RWD") and car:FindFirstChild("Body") and car:FindFirstChild("Body"):FindFirstChild("VehicleSeat")
-				car.PrimaryPart = car.RWD
-				game:GetService("Players").LocalPlayer.Character:SetPrimaryPartCFrame(OldPos)
-				local Done = false
-				car.Body.VehicleSeat:Sit(game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid"))
-				repeat 
-					game:GetService("RunService").RenderStepped:Wait()
-					car:SetPrimaryPartCFrame(OldPos)
-					game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame =CFrame.new(car.Body.VehicleSeat.Position)
-					car.Body.VehicleSeat:Sit(game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid"))
-					if game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid").Sit == true then
-						Done = true
-					end
-				until Done
+		local org = getpos()
+		MoveTo(Speaker.Character:GetPrimaryPartCFrame())
+		pcall(function()
+			local OldPos = game:GetService("Players").LocalPlayer.Character:GetPrimaryPartCFrame()
+			game:GetService("Players").LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(-910, 95, 2157))
+			wait()
+			local car = nil
+			task.spawn(function()
+				car = game:GetService("Workspace").CarContainer.ChildAdded:Wait()
 			end)
-			MoveTo(org)
-		else
-			Msg(Speaker,"Player not found!")
-			NotFound()
-		end
+			repeat wait(.1)
+				local ohInstance1 = game:GetService("Workspace").Prison_ITEMS.buttons:GetChildren()[8]["Car Spawner"]
+				workspace.Remote.ItemHandler:InvokeServer(ohInstance1)
+			until car
+			repeat task.wait() until car:FindFirstChild("RWD") and car:FindFirstChild("Body") and car:FindFirstChild("Body"):FindFirstChild("VehicleSeat")
+			car.PrimaryPart = car.RWD
+			game:GetService("Players").LocalPlayer.Character:SetPrimaryPartCFrame(OldPos)
+			local Done = false
+			car.Body.VehicleSeat:Sit(game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid"))
+			repeat 
+				game:GetService("RunService").RenderStepped:Wait()
+				car:SetPrimaryPartCFrame(OldPos)
+				game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame =CFrame.new(car.Body.VehicleSeat.Position)
+				car.Body.VehicleSeat:Sit(game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid"))
+				if game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid").Sit == true then
+					Done = true
+				end
+			until Done
+		end)
+		wait(.1)
+		MoveTo(org)
 	end
 	if commandPLAYER("kill") then
 		local r = FindPlayer(Arg2_P)
@@ -2849,7 +2844,7 @@ function AdminChatted(Text,Speaker)
 			end
 			bring(r,Speaker.Character:GetPrimaryPartCFrame()*CFrame.new(0,5,0))
 		else
-			Msg(Speaker,"Player not found!")
+			Msg(Speaker,"[ADMIN]: Player not found!")
 			NotFound()
 		end
 	end
