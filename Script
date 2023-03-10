@@ -6,13 +6,15 @@
     | |   _| || |__| | |____| | \ \   / ____ \| |__| | |  | |_| |_| |\  |
     |_|  |_____\_____|______|_|  \_\ /_/    \_\_____/|_|  |_|_____|_| \_|     
     Created by H17S3
-    --CREDITS
+    https://www.youtube.com/watch?v=cL-d_GOXa28
+    
+    clickkill
 ]]
 
 repeat task.wait() until game:IsLoaded()
 do--//Instances
 	Debug = false
-	BETA = true
+	BETA = false
 	Folder = Instance.new("Folder")
 	ScreenGui = Instance.new("ScreenGui")
 	CmdBarFrame = Instance.new("Frame")
@@ -68,6 +70,7 @@ do
 		Godmode = false,
 		Antibring = true,
 		AntiTouch = false,
+		ClickKill = false,
 		AutoItems = false,
 		AntiArrest = false,
 		Admined = {},
@@ -190,6 +193,126 @@ do --//Main Gui
 			CmdButton.ImageColor3 = Color3.new(1, 1, 1)
 		end)
 	end
+	do
+		Toggles = Instance.new("ImageLabel")
+		local Stokeee = Instance.new("UIStroke")
+		local Corrrer = Instance.new("UICorner")
+		local ToggleScroll = Instance.new("ScrollingFrame")
+		local kewkfwe = Instance.new("UIListLayout")
+		local tempb = Instance.new("TextButton")
+		local UIStroke = Instance.new("UIStroke")
+		local UICorner = Instance.new("UICorner")
+
+		Toggles.Name = "Toggles"
+		Toggles.Parent = ScreenGui
+		Toggles.AnchorPoint = Vector2.new(0.5, 0.5)
+		Toggles.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+		Toggles.Position = UDim2.new(0.499593854, 0, 0.499376595, 0)+UDim2.new(0,0,1,0)
+		Toggles.Size = UDim2.new(0, 539, 0, 409)
+		Toggles.Visible = false
+		Toggles.Image = "rbxassetid://12011977394"
+		Toggles.ImageTransparency = 0.260
+
+		Stokeee.Parent = Toggles
+		Stokeee.Name = "Stokeee"
+
+		Corrrer.Name = "Corrrer"
+		Corrrer.Parent = Toggles
+
+		ToggleScroll.Name = "ToggleScroll"
+		ToggleScroll.Parent = Toggles
+		ToggleScroll.Active = true
+		ToggleScroll.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		ToggleScroll.BackgroundTransparency = 1.000
+		ToggleScroll.Size = UDim2.new(0, 539, 0, 408)
+		ToggleScroll.ScrollBarThickness = 4
+
+		kewkfwe.Name = "kewkfwe"
+		kewkfwe.Parent = ToggleScroll
+		kewkfwe.SortOrder = Enum.SortOrder.LayoutOrder
+		kewkfwe.Padding = UDim.new(0, 5)
+
+		tempb.Name = "tempb"
+		tempb.Parent = ScreenGui
+		tempb.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+		tempb.BackgroundTransparency = 0.550
+		tempb.Position = UDim2.new(0, 0, -7.47979882e-08, 0)
+		tempb.Size = UDim2.new(0, 539, 0, 44)
+		tempb.Visible = false
+		tempb.Font = Enum.Font.SourceSans
+		tempb.Text = "Autorespawn [OFF]"
+		tempb.TextColor3 = Color3.fromRGB(255, 255, 255)
+		tempb.TextSize = 14.000
+
+		UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+		UIStroke.Parent = tempb
+
+		UICorner.CornerRadius = UDim.new(0, 3)
+		UICorner.Parent = tempb
+		for i,v in pairs(States) do
+			if v == true or v == false then --//lazy for typeof function
+				local p = tempb:Clone()
+				p.Visible = true
+				p.Parent = ToggleScroll
+				p.Text = tostring(i).." ["..tostring(v).."]"
+				p.MouseButton1Up:Connect(function()
+					States[i]=not States[i]
+					p.Text = tostring(i).." ["..tostring(States[i]).."]"
+				end)
+			end
+		end
+	end
+	do
+		TogglesButton = Instance.new("ImageLabel")
+		UICornera = Instance.new("UICorner")
+		UIStroke12 = Instance.new("UIStroke")
+		CmdButton2 = Instance.new("ImageButton")
+
+		TogglesButton.Name = "CmdsIcon"
+		TogglesButton.Parent = CmdBarFrame
+		TogglesButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+		TogglesButton.Position = UDim2.new(-0.132423401, 0, 0.0226149559, 0)+UDim2.new(1.15,0,0,0)
+		TogglesButton.Size = UDim2.new(0.121672593, 0, 0.945454538, 0)
+		TogglesButton.Image = "rbxassetid://12661800163"
+		TogglesButton.ImageTransparency = 0
+
+		UICornera.CornerRadius = UDim.new(0, 6)
+		UICornera.Parent = TogglesButton
+
+		UIStroke12.Parent = TogglesButton
+
+		CmdButton2.Name = "ToggleButton"
+		CmdButton2.Parent = TogglesButton
+		CmdButton2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		CmdButton2.BackgroundTransparency = 1.000
+		CmdButton2.Position = UDim2.new(0.298999995, 0, 0.27700001, 0)
+		CmdButton2.Size = UDim2.new(0, 27, 0, 27)
+		CmdButton2.Image = "rbxassetid://11698445336"
+		CmdButton2.ImageTransparency = 0.430
+		CmdButton2.MouseButton1Up:Connect(function()
+			if not Temp.CmdsC then
+				Temp.CmdsC = true
+				if Toggles.Visible == false then
+					Toggles.Position = Toggles.Position+UDim2.new(0,0,1,0)
+					wait(.1)
+					Toggles:TweenPosition(SavedCmdsPosition,"Out","Quart",1)
+					Toggles.Visible = true
+				else
+					Toggles:TweenPosition(SavedCmdsPosition+UDim2.new(0,0,1,0),"Out","Quart",1)
+					wait(.5)
+					Toggles.Visible = false
+				end
+				wait(.7)
+				Temp.CmdsC = false
+			end
+		end)
+		CmdButton2.MouseEnter:Connect(function()
+			CmdButton2.ImageColor3 = Color3.new(0.588235, 0.588235, 0.588235)
+		end)
+		CmdButton2.MouseLeave:Connect(function()
+			CmdButton2.ImageColor3 = Color3.new(1, 1, 1)
+		end)
+	end
 	Out.Name = "Out"
 	Out.Parent = CmdBarFrame
 	Out.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
@@ -254,14 +377,6 @@ do --//Main Gui
 	TEMP_CMD.Text = "sex"--//yes
 	TEMP_CMD.TextColor3 = Color3.fromRGB(255, 255, 255)
 	TEMP_CMD.TextSize = 14.000
-	do
-		if UIS.TouchEnabled and not UIS.MouseEnabled then
-			Out.Size = UDim2.new(0.647, 0,0.684, 0)
-			Out.Position = UDim2.new(0.176, 0,0.146, 0)
-			CmdsIcon.Size = UDim2.new(0.092, 0,0.684, 0)
-			Temp.Phone = true
-		end
-	end
 	SavedCmdsPosition = Commands.Position
 	SearchBar.Parent = Commands
 	SearchBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -275,12 +390,13 @@ do --//Main Gui
 	SearchBar.TextSize = 14.000
 	local UIS = game:GetService("UserInputService")
 	local function dragify(Frame) --//shit annoying
-		dragToggle = nil
+		local dragToggle = nil
 		local dragSpeed = 0.50
-		dragInput = nil
-		dragStart = nil
+		local dragInput = nil
+		local dragStart = nil
 		local dragPos = nil
-		function updateInput(input)
+		local startPos = nil
+		local function updateInput(input)
 			local Delta = input.Position - dragStart
 			local Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + Delta.X, startPos.Y.Scale, startPos.Y.Offset + Delta.Y)
 			game:GetService("TweenService"):Create(Frame, TweenInfo.new(0.30), {Position = Position}):Play()
@@ -308,7 +424,7 @@ do --//Main Gui
 			end
 		end)
 	end
-
+	dragify(Toggles)
 	dragify(Commands)
 	function Notif(Text,Dur)
 		task.spawn(function()
@@ -1328,7 +1444,7 @@ do
 		else
 			Notif("no prefix selected?")
 		end
-		
+
 	end,"sets a prefix","STRING_COMMAND")
 	Add_Command("keycard",function(Args)
 		local Args = GetArgs(Args)
@@ -1796,6 +1912,10 @@ do
 			NotFound()
 		end
 	end,"teleports to a player")
+	Add_Command("clickkill",function(Args)
+		local Args = GetArgs(Args)
+		Toggle(Args[2],"ClickKill")
+	end,"Click to kill people","TOGGLE_COMMAND")
 	Add_Command("clickarrest",function(Args)
 		local Args = GetArgs(Args)
 		Toggle(Args[2],"ClickArrest")
@@ -1970,33 +2090,9 @@ do
 		local Args = GetArgs(Args)
 		ChangeTeam(game.Teams.Guards)
 	end,"puts you into guards team")
-	Add_Command("crashserver",function(Args)
-		local Args = GetArgs(Args)
-		All_Guns()
-		wait(.7)
-		local T = {}
-		for i =1,12000 do
-			T[#T+1] = unpack({
-				["RayObject"] = Ray.new(Vector3.new(780.852478, 99.4999161, 2568.36914), Vector3.new(308.161377, -90.2463608, -238.520844)),
-				["Distance"] = 195.429909706115723,
-				["Cframe"] = CFrame.new(790.130249, 97.1738739, 2562.07666, -0.683907807, 0.18761155, 0.705033362, 0, 0.966370463, -0.257154137, -0.729568481, -0.175869718, -0.660908222),
-				["Hit"] = workspace:FindFirstChildOfClass("Part")
-			})
-		end
-		local ohInstance2 = game:GetService("Players").LocalPlayer.Backpack["Remington 870"]
-		for i =1,40 do
-			task.spawn(function()
-				game:GetService("ReplicatedStorage").ShootEvent:FireServer(T, ohInstance2)
-			end)
-		end
-		wait(.7)
-		while task.wait() do
-			game:GetService("ReplicatedStorage").ShootEvent:FireServer(T, ohInstance2)
-		end
-	end,"Crashes the server")
 	Add_Command("lag",function(Args)
 		local Args = GetArgs(Args)
-		All_Guns()
+		GetGun("Remington 870")
 		wait(.7)
 		local T = {}
 		for i =1,100 do
@@ -2509,6 +2605,8 @@ plr.CharacterAdded:Connect(function(char)
 		end)
 		--//AntiTase
 		task.spawn(function()
+			repeat task.wait() until plr.Character:FindFirstChild("ClientInputHandler")
+			wait(.3)
 			if States.AntiTase then
 				for i,v in pairs(getconnections(workspace:WaitForChild("Remote").tazePlayer.OnClientEvent)) do
 					v:Disable()
@@ -3063,13 +3161,18 @@ function AdminChatted(Text,Speaker)
 end
 
 plr:GetMouse().Button1Up:Connect(function()
-	if States.ClickArrest then
-		local Target = plr:GetMouse().Target
-		if Target and Target.Parent and Target.Parent:FindFirstChildOfClass("Humanoid") and game:GetService("Players"):FindFirstChild(Target.Parent.Name) then
-			local TargetModelPlr = game:GetService("Players"):FindFirstChild(Target.Parent.Name)
+	local Target = plr:GetMouse().Target
+	if Target and Target.Parent and Target.Parent:FindFirstChildOfClass("Humanoid") and game:GetService("Players"):FindFirstChild(Target.Parent.Name) or game:GetService("Players"):FindFirstChild(Target.Parent.Parent.Name) then
+		local TargetModelPlr = game:GetService("Players"):FindFirstChild(Target.Parent.Name) or game:GetService("Players"):FindFirstChild(Target.Parent.Parent.Name)
+		if States.ClickArrest then
 			if TargetModelPlr.Team ~= game:GetService("Teams").Guards then
 				local ohInstance1 = Target
 				workspace.Remote.arrest:InvokeServer(ohInstance1)
+			end
+		end
+		if States.ClickKill then
+			if TargetModelPlr.Team ~= game:GetService("Teams").Guards then
+				kill(TargetModelPlr)
 			end
 		end
 	end
