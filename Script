@@ -941,7 +941,7 @@ do
 		local saved = getpos()
 		local Team = GetTeam()
 		if not TeamS then
-			ChangeTeam(game.Teams.Criminals)
+			ChangeTeam(game.Teams.Inmates)
 		end
 		GetGun("M9")
 		repeat task.wait() until plr.Backpack:FindFirstChild("M9")
@@ -953,6 +953,27 @@ do
 			elseif TeamS == game.Teams.Inmates then
 				ChangeTeam(game.Teams.Criminals)
 			end
+		end
+		if not TeamS then
+			for i,v in pairs(game:GetService("Players"):GetPlayers()) do
+				if not table.find(Whitelisted,v.Name) and v ~= plr then
+					if v.Team == game.Teams.Criminals then
+						for i =1,10 do
+							Gen[#Gen+1]={
+								["RayObject"] = Ray.new(Vector3.new(0,0,0), Vector3.new(0,0,0)),
+								["Distance"] = .1,
+								["Cframe"] = CFrame.new(),
+								["Hit"] = v.Character:WaitForChild("Head")
+							}
+						end
+					end
+				end
+			end
+			game:GetService("ReplicatedStorage").ShootEvent:FireServer(Gen, Gun)
+		end
+		--
+		if not TeamS then
+			ChangeTeam(game.Teams.Criminals)
 		end
 		for i,v in pairs(game:GetService("Players"):GetPlayers()) do
 			if not table.find(Whitelisted,v.Name) and v ~= plr then
@@ -969,13 +990,6 @@ do
 			end
 		end
 		game:GetService("ReplicatedStorage").ShootEvent:FireServer(Gen, Gun)
-		if not TeamS then
-			for i,v in pairs(game:GetService("Players"):GetPlayers()) do
-				if v and v~= plr and not table.find(Whitelisted,v.Name) and v.Team==game.Teams.Criminals then
-					MKILL(v)
-				end
-			end
-		end
 		wait(.1)
 		Last_Team(a)
 		wait(.4)
