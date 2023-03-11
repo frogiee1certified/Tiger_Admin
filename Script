@@ -69,6 +69,7 @@ do
 		ClickArrest = false,
 		Godmode = false,
 		Antibring = true,
+		OnePunch = false,
 		AntiTouch = false,
 		ClickKill = false,
 		AutoItems = false,
@@ -388,7 +389,6 @@ do --//Main Gui
 	SearchBar.Text = ""
 	SearchBar.TextColor3 = Color3.fromRGB(0, 0, 0)
 	SearchBar.TextSize = 14.000
-	local UIS = game:GetService("UserInputService")
 	local function dragify(Frame) --//shit annoying
 		local dragToggle = nil
 		local dragSpeed = 0.50
@@ -639,6 +639,9 @@ end
 
 do
 	--//Prison life stuff functions
+	function GetHumanoid()
+		return plr.Character:FindFirstChildOfClass("Humanoid")
+	end
 	function WaitForRespawn()
 		task.spawn(function()
 			local RepeatPos = getpos()
@@ -1211,6 +1214,7 @@ do
 		if not Pos then
 			Pos = getpos()
 		end
+		Resfreshing = true
 		local Goto = Pos or getpos()
 		local Connections = {}
 		local Cam = workspace.CurrentCamera.CFrame
@@ -1227,6 +1231,7 @@ do
 				task.spawn(function()
 					wait(.05)
 					MoveTo(Goto)
+					Resfreshing = false
 				end)
 				Connections[1]:Disconnect()
 			end)
@@ -1926,30 +1931,6 @@ do
 			NotFound()
 		end
 	end,"teleports to a player")
-	Add_Command("crashserver",function(Args)
-		local Args = GetArgs(Args)
-		GetGun("Remington 870")
-		wait(.7)
-		local T = {}
-		for i =1,12000 do
-			T[#T+1] = unpack({
-				["RayObject"] = Ray.new(Vector3.new(780.852478, 99.4999161, 2568.36914), Vector3.new(308.161377, -90.2463608, -238.520844)),
-				["Distance"] = 195.429909706115723,
-				["Cframe"] = CFrame.new(790.130249, 97.1738739, 2562.07666, -0.683907807, 0.18761155, 0.705033362, 0, 0.966370463, -0.257154137, -0.729568481, -0.175869718, -0.660908222),
-				["Hit"] = workspace:FindFirstChildOfClass("Part")
-			})
-		end
-		local ohInstance2 = game:GetService("Players").LocalPlayer.Backpack["Remington 870"]
-		for i =1,40 do
-			task.spawn(function()
-				game:GetService("ReplicatedStorage").ShootEvent:FireServer(T, ohInstance2)
-			end)
-		end
-		wait(.7)
-		while task.wait() do
-			game:GetService("ReplicatedStorage").ShootEvent:FireServer(T, ohInstance2)
-		end
-	end,"Crashes the server")
 	Add_Command("clickkill",function(Args)
 		local Args = GetArgs(Args)
 		Toggle(Args[2],"ClickKill")
@@ -1962,6 +1943,10 @@ do
 		local Args = GetArgs(Args)
 		Toggle(Args[2],"autore")
 	end,"Respawns at death position","TOGGLE_COMMAND")
+	Add_Command("onepunch",function(Args)
+		local Args = GetArgs(Args)
+		Toggle(Args[2],"OnePunch")
+	end,"Kills anyone that you punch 1 shot","TOGGLE_COMMAND")
 	Add_Command("fastpunch",function(Args)
 		local Args = GetArgs(Args)
 		Toggle(Args[2],"FastPunch")
@@ -2576,15 +2561,38 @@ do
 			end
 		end
 	end)
+	Running = false
 	UIS.InputBegan:connect(function(UserInput,Typing)
-		if unloaded then
-			return
-		end
-		if UserInput.KeyCode == Enum.KeyCode.Semicolon and not Typing and not unloaded then
-			task.wait(.03)
-			CommandBar:CaptureFocus()
+		if not unloaded and not Typing then
+			if UserInput.KeyCode == Enum.KeyCode.LeftShift then
+				Running = true
+			end
+			if UserInput.KeyCode == Enum.KeyCode.F and States.OnePunch and not Running then --//Onepunch nothing advanced just to support weak exploits
+				local a = getpos()*CFrame.new(0,0,2)
+				for i,v in pairs(game:GetService("Players"):GetPlayers()) do
+					if v and v~= plr and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+						if (a.Position-plr.Character:FindFirstChild("HumanoidRootPart").Position).Magnitude <3 and not Running then
+							for i =1,13 do
+								task.spawn(function()
+									game.ReplicatedStorage["meleeEvent"]:FireServer(v)
+								end)
+							end
+						end
+					end
+				end
+			end
+			if UserInput.KeyCode == Enum.KeyCode.Semicolon and not unloaded then
+				task.wait(.03)
+				CommandBar:CaptureFocus()
+			end
 		end
 	end)
+	UIS.InputEnded:connect(function(UserInput,Typing)
+		if UserInput.KeyCode == Enum.KeyCode.LeftShift then
+			Running = false
+		end
+	end)
+	
 end
 plr.CharacterAdded:Connect(function(char)
 	if unloaded then return end
@@ -2682,6 +2690,7 @@ task.spawn(function()
 	while wait(.1) do
 		--//Slow loop
 		if unloaded then break end
+
 		if States.FastPunch then
 			getsenv(game.Players.LocalPlayer.Character.ClientInputHandler).cs.isFighting = false
 		end
@@ -2932,6 +2941,19 @@ plr.Backpack.ChildAdded:Connect(function(v)
 end)
 task.spawn(function()
 	while task.wait() do
+		if GetHumanoid() and GetHumanoid().WalkSpeed >6 and Running and Resfreshing then
+			GetHumanoid().WalkSpeed = 24
+		else
+			if Resfreshing then
+				if GetHumanoid().WalkSpeed <6 then
+					if GetHumanoid().WalkSpeed ~=0 then
+						GetHumanoid().WalkSpeed = 5
+					end
+				else
+					GetHumanoid().WalkSpeed =16
+				end
+			end
+		end
 		pcall(function()
 			if States.AntiArrest == true and unloaded == false then
 				for i,v in pairs(game.Players:GetPlayers()) do
@@ -2959,7 +2981,7 @@ task.spawn(function()
 							local args = {
 								[1] = v
 							}
-							for i =1,20 do
+							for i =1,2 do
 								task.spawn(function()
 									game:GetService("ReplicatedStorage").meleeEvent:FireServer(unpack(args))
 								end)
