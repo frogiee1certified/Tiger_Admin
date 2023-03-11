@@ -2963,7 +2963,7 @@ task.spawn(function()
 		if GetHumanoid() and GetHumanoid().WalkSpeed >6 and Running and Resfreshing then
 			GetHumanoid().WalkSpeed = 24
 		else
-			if Resfreshing then
+			if Resfreshing and GetHumanoid() then
 				if GetHumanoid().WalkSpeed <6 then
 					if GetHumanoid().WalkSpeed ~=0 then
 						GetHumanoid().WalkSpeed = 5
