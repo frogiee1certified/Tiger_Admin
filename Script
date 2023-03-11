@@ -72,6 +72,7 @@ do
 		OnePunch = false,
 		AntiTouch = false,
 		ClickKill = false,
+		AntiShield = false,
 		AutoItems = false,
 		AntiArrest = false,
 		Admined = {},
@@ -1947,6 +1948,14 @@ do
 		local Args = GetArgs(Args)
 		Toggle(Args[2],"OnePunch")
 	end,"Kills anyone that you punch 1 shot","TOGGLE_COMMAND")
+	Add_Command("AntiShield",function(Args)
+		local Args = GetArgs(Args)
+		Toggle(Args[2],"AntiShield")
+		if States.AntiShield then
+			wait(1)
+			Notif("All shields are being removed until disabled.")
+		end
+	end,"Kills anyone that you punch 1 shot","TOGGLE_COMMAND")
 	Add_Command("fastpunch",function(Args)
 		local Args = GetArgs(Args)
 		Toggle(Args[2],"FastPunch")
@@ -2592,7 +2601,7 @@ do
 			Running = false
 		end
 	end)
-	
+
 end
 plr.CharacterAdded:Connect(function(char)
 	if unloaded then return end
@@ -2737,6 +2746,9 @@ task.spawn(function()
 end)
 task.spawn(function()
 	while wait(1) do --//Even SLOWER loop
+		if unloaded then
+			break
+		end
 		if #Reload_Guns>0 then
 			for i,v in pairs(Reload_Guns) do
 				if v then
@@ -2747,6 +2759,13 @@ task.spawn(function()
 				end
 				if v == nil or v and v.Parent == nil then
 					Reload_Guns[i]=nil
+				end
+			end
+		end
+		if States.AntiShield then
+			for i,v in pairs(game:GetService("Players"):GetPlayers()) do
+				if v and v.Character and v:FindFirstChild("Torso") and v:FindFirstChild("Torso"):FindFirstChild("ShieldFolder") then
+					v.Torso:FindFirstChild("ShieldFolder"):Destroy()
 				end
 			end
 		end
