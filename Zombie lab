@@ -1,0 +1,177 @@
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/bloodball/-back-ups-for-libs/main/wizard"))()
+local GameGUI = Library:NewWindow("Game")
+local plr = game:GetService("Players").LocalPlayer
+local Game_ = GameGUI:NewSection("Main")
+local Items = GameGUI:NewSection("Items")
+local states = {
+	getcure = false,
+	getvirus = false,
+	killall = false,
+}
+local Normal2 = {
+	Auto = false, 
+	MuzzleOffset = Vector3.new(0, -1, 0.5), 
+	BaseDamage = 10, 
+	FireRate = 0.2, 
+	ReloadTime = 2, 
+	AmmoPerClip = math.huge, 
+	Spread = 0, 
+	HeadshotEnabled = true, 
+	HeadshotDamageMultiplier = 1.5, 
+	MouseIconID = "409468479", 
+	HitSoundIDs = { 0 }, 
+	IdleAnimationID = 8473986959, 
+	IdleAnimationSpeed = 1, 
+	FireAnimationID = 8473981121, 
+	FireAnimationSpeed = 1, 
+	ReloadAnimationID = 8473989076, 
+	ReloadAnimationSpeed = 1, 
+	LimitedClipEnabled = false, 
+	Clips = 100000, 
+	MaxClip = 100000, 
+	ShotgunEnabled = false, 
+	BulletPerShot = 8, 
+	ShotgunReload = false, 
+	ShotgunClipinAnimationID = nil, 
+	ShotgunClipinAnimationSpeed = 1, 
+	ShellClipinSpeed = 0.5, 
+	BurstFireEnabled = false, 
+	BulletPerBurst = 3, 
+	BurstRate = 0.075, 
+	SniperEnabled = false, 
+}
+local Normal = {
+	FieldOfView = 60, 
+	MouseSensitive = 0.05, 
+	SpreadRedution = 3, 
+	CameraShakingEnabled = true, 
+	Intensity = 0.25, 
+	ExplosiveEnabled = false, 
+	Radius = 8, 
+	VisualizerEnabled = true, 
+	BulletSpeed = 25, 
+	BulletSize = Vector3.new(50,50,50), 
+	BulletColor = BrickColor.new("Bright yellow"), 
+	BulletTransparency = 0, 
+	BulletMaterial = Enum.Material.Neon, 
+	FadeTime = 1, 
+	ChargedShotEnabled = true, 
+	ChargingTime = 0, 
+	MinigunEnabled = false, 
+	DelayBeforeFiring = 1, 
+	DelayAfterFiring = 1, 
+	Knockback = 2, 
+	Lifesteal = 0, 
+	FlamingBullet = false, 
+	DualEnabled = false, 
+	Piercing = 0
+};
+function KillAll()
+	for i,v in pairs(game:GetService("Players"):GetPlayers()) do
+		pcall(function()
+			local ohInstance1 = v.Character.Humanoid
+			local ohInstance2 = v.Character.HumanoidRootPart --[[ PARENTED TO NIL OR DESTROYED ]]
+			local ohNumber3 = 100
+			local ohVector34 = Vector3.new(0,0,0)
+			local ohNumber5 = 2
+			local ohNumber6 = 0
+			local ohBoolean7 = false
+			coroutine.wrap(function()
+				game:GetService("Players").LocalPlayer.Backpack.Pistol.GunScript_Server.InflictTarget:FireServer(ohInstance1, ohInstance2, ohNumber3, ohVector34, ohNumber5, ohNumber6, ohBoolean7)
+			end)()
+		end)
+		wait()
+	end
+end
+do
+	Items:CreateToggle("Get cure", function(value)
+		states.getcure = value
+	end)
+	Items:CreateToggle("Get virus", function(value)
+		states.getvirus = value
+	end)
+	Game_:CreateToggle("Kill zombies", function(value)
+		states.killall = value
+		if states.killall == true then
+			KillAll()
+			repeat wait(3)
+				KillAll()
+			until states.killall == false
+		end
+	end)
+	Game_:CreateToggle("Bypass human door", function(value)
+		if value then
+			game:GetService("Workspace").HumanOnlyDoor.Transparency = .85
+			game:GetService("Workspace").HumanOnlyDoor.CanCollide = false
+		else
+			game:GetService("Workspace").HumanOnlyDoor.Transparency = .5
+			game:GetService("Workspace").HumanOnlyDoor.CanCollide = true
+		end
+	end)
+end
+local Gmods = Library:NewWindow("Gun mods")
+local Game_2 = Gmods:NewSection("Gun mods 1")
+local Game_3 = Gmods:NewSection("Gun mods 2")
+do
+	for i,v in pairs(Normal) do
+		if typeof(v):lower() == "boolean" then
+			Game_2:CreateToggle(tostring(i), function(value)
+				Normal[i] = not Normal[i]
+			end)
+		elseif typeof(v):lower() == "number" then
+			Game_2:CreateSlider(tostring(i), 0, 100, 15, false, function(value)
+				Normal[i] = value
+			end)
+		end
+	end
+	for i,v in pairs(Normal2) do
+		if typeof(v):lower() == "boolean" then
+			Game_3:CreateToggle(tostring(i), function(value)
+				Normal[i] = not Normal[i]
+			end)
+		elseif typeof(v):lower() == "number" then
+			Game_3:CreateSlider(tostring(i), 0, 100, 15, false, function(value)
+				Normal[i] = value
+			end)
+		end
+	end
+end
+
+while wait(2) do
+	if plr.Character:FindFirstChild("Anti-Exploits") then
+		plr.Character:FindFirstChild("Anti-Exploits"):Destroy()
+	end
+	if plr.PlayerGui["PlayerLocalScripts(ReOnSp)"]:FindFirstChild("AntiWeaponZone") then
+		plr.PlayerGui["PlayerLocalScripts(ReOnSp)"]:FindFirstChild("AntiWeaponZone").Disabled = true
+	end
+	if plr.PlayerGui["PlayerLocalScripts(ReOnSp)"]:FindFirstChild("AntiWeaponZoneMover") then
+		plr.PlayerGui["PlayerLocalScripts(ReOnSp)"]:FindFirstChild("AntiWeaponZoneMover").Disabled = true
+	end
+	if states.getcure and not game:GetService("Players").LocalPlayer.Character:FindFirstChild("Cure") and not game:GetService("Players").LocalPlayer.Backpack:FindFirstChild("Cure") then
+		game:GetService("ReplicatedStorage").Events.GiveCure:FireServer()
+	end
+	if states.getvirus and not game:GetService("Players").LocalPlayer.Character:FindFirstChild("Virus") and not game:GetService("Players").LocalPlayer.Backpack:FindFirstChild("Virus") then
+		game:GetService("ReplicatedStorage").Events.GiveVirus:FireServer()
+	end
+	for i,v in pairs(game:GetService("Players").LocalPlayer.Backpack:GetChildren()) do
+		if v and v:FindFirstChildOfClass("ModuleScript") and v:FindFirstChild("Setting") then
+			for i2,v2 in pairs(Normal) do
+				require(v:FindFirstChild("Setting"))[i2]=v2
+			end
+		end
+	end
+	for i,v in pairs(game:GetService("Players").LocalPlayer.Backpack:GetChildren()) do
+		if v and v:FindFirstChildOfClass("ModuleScript") and v:FindFirstChild("Setting") then
+			for i2,v2 in pairs(Normal2) do
+				require(v:FindFirstChild("Setting"))[i2]=v2
+			end
+		end
+	end
+	for i,v in pairs(game:GetService("Players").LocalPlayer.Character:GetChildren()) do
+		if v and v:FindFirstChildOfClass("ModuleScript") and v:FindFirstChild("Setting") then
+			for i2,v2 in pairs(Normal2) do
+				require(v:FindFirstChild("Setting"))[i2]=v2
+			end
+		end
+	end
+end
