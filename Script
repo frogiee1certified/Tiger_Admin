@@ -521,7 +521,11 @@ do --//Main Gui
 	end
 
 	for i,v in pairs(ScreenGui:GetDescendants()) do v.Name = game:GetService("HttpService"):GenerateGUID(true) end
-
+	if game:GetService("UserInputService").TouchEnabled and not game:GetService("UserInputService").KeyboardEnabled then
+		CommandBar.Position=CommandBar.Position-UDim2.new(0,0,.05,0)
+		TogglesButton=TogglesButton.Position-UDim2.new(0,0,.2,0)
+		CmdButton=CmdButton.Position-UDim2.new(0,0,.2,0)
+	end
 end
 do--//Command handler
 	Prefix = "!"
@@ -3265,5 +3269,5 @@ DefaultChatSystemChatEvents.OnMessageDoneFiltering.OnClientEvent:Connect(functio
 end)
 refresh()
 plr.PlayerGui.Home.fadeFrame.Visible = false--//black bar
-CmdBarFrame:TweenPosition(UDim2.new(0.5, 0, 0.899999998, 0),"Out","Back",.5)
+CmdBarFrame:TweenPosition(UDim2.new(0.5, 0, 0.899999998, 0)-UDim2.new(0,0,.05,0),"Out","Back",.5)
 Notif("Loaded! type !noinvite to disable discord invite",3)
