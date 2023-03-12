@@ -35,6 +35,10 @@ local Games = {
 		PlaceId = 2413927524,
 		Url = "https://raw.githubusercontent.com/H17S32/Tiger_Admin/main/The_Rake"
 	},
+	[8]={
+		PlaceId = 6741970382,
+		Url = "https://raw.githubusercontent.com/H17S32/Tiger_Admin/main/Zombie%20lab"
+	},
 }
 local Run = function(HTTP)
 	Loadstring(Gamem:HttpGetAsync(HTTP))()
@@ -47,4 +51,4 @@ for i,v in pairs(Games) do
 end
 Run("https://raw.githubusercontent.com/H17S32/Tiger_Admin/main/Script_Univ")
 return
-	
+
