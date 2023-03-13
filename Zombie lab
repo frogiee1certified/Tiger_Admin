@@ -7,6 +7,8 @@ local states = {
 	getcure = false,
 	getvirus = false,
 	killall = false,
+	HumanOnlyD = false,
+	
 }
 local Normal2 = {
 	Auto = false, 
@@ -100,9 +102,15 @@ do
 		end
 	end)
 	Game_:CreateToggle("Bypass human door", function(value)
+		states.HumanOnlyD = value
 		if value then
 			game:GetService("Workspace").HumanOnlyDoor.Transparency = .85
 			game:GetService("Workspace").HumanOnlyDoor.CanCollide = false
+			repeat task.wait()
+				if game:GetService("Workspace").HumanOnlyDoor.CanCollide == true then
+					game:GetService("Workspace").HumanOnlyDoor.CanCollide = false
+				end
+			until states.HumanOnlyD == false
 		else
 			game:GetService("Workspace").HumanOnlyDoor.Transparency = .5
 			game:GetService("Workspace").HumanOnlyDoor.CanCollide = true
@@ -138,40 +146,37 @@ do
 end
 
 while wait(2) do
-	if plr.Character:FindFirstChild("Anti-Exploits") then
-		plr.Character:FindFirstChild("Anti-Exploits"):Destroy()
-	end
-	if plr.PlayerGui["PlayerLocalScripts(ReOnSp)"]:FindFirstChild("AntiWeaponZone") then
-		plr.PlayerGui["PlayerLocalScripts(ReOnSp)"]:FindFirstChild("AntiWeaponZone").Disabled = true
-	end
-	if plr.PlayerGui["PlayerLocalScripts(ReOnSp)"]:FindFirstChild("AntiWeaponZoneMover") then
-		plr.PlayerGui["PlayerLocalScripts(ReOnSp)"]:FindFirstChild("AntiWeaponZoneMover").Disabled = true
-	end
-	if states.getcure and not game:GetService("Players").LocalPlayer.Character:FindFirstChild("Cure") and not game:GetService("Players").LocalPlayer.Backpack:FindFirstChild("Cure") then
-		game:GetService("ReplicatedStorage").Events.GiveCure:FireServer()
-	end
-	if states.getvirus and not game:GetService("Players").LocalPlayer.Character:FindFirstChild("Virus") and not game:GetService("Players").LocalPlayer.Backpack:FindFirstChild("Virus") then
-		game:GetService("ReplicatedStorage").Events.GiveVirus:FireServer()
-	end
-	for i,v in pairs(game:GetService("Players").LocalPlayer.Backpack:GetChildren()) do
-		if v and v:FindFirstChildOfClass("ModuleScript") and v:FindFirstChild("Setting") then
-			for i2,v2 in pairs(Normal) do
-				require(v:FindFirstChild("Setting"))[i2]=v2
+	pcall(function()
+		if plr.Character:FindFirstChild("Anti-Exploits") then
+			plr.Character:FindFirstChild("Anti-Exploits"):Destroy()
+		end
+		if plr.PlayerGui["PlayerLocalScripts(ReOnSp)"]:FindFirstChild("AntiWeaponZone") then
+			plr.PlayerGui["PlayerLocalScripts(ReOnSp)"]:FindFirstChild("AntiWeaponZone").Disabled = true
+		end
+		if plr.PlayerGui["PlayerLocalScripts(ReOnSp)"]:FindFirstChild("AntiWeaponZoneMover") then
+			plr.PlayerGui["PlayerLocalScripts(ReOnSp)"]:FindFirstChild("AntiWeaponZoneMover").Disabled = true
+		end
+		if states.getcure and not game:GetService("Players").LocalPlayer.Character:FindFirstChild("Cure") and not game:GetService("Players").LocalPlayer.Backpack:FindFirstChild("Cure") then
+			game:GetService("ReplicatedStorage").Events.GiveCure:FireServer()
+		end
+		if states.getvirus and not game:GetService("Players").LocalPlayer.Character:FindFirstChild("Virus") and not game:GetService("Players").LocalPlayer.Backpack:FindFirstChild("Virus") then
+			game:GetService("ReplicatedStorage").Events.GiveVirus:FireServer()
+		end
+		for i,v in pairs(game:GetService("Players").LocalPlayer.Backpack:GetChildren()) do
+			if v and v:FindFirstChildOfClass("ModuleScript") and v:FindFirstChild("Setting") then
+				for i2,v2 in pairs(Normal) do
+					print('applied '..i2)
+					require(v:FindFirstChild("Setting"))[i2]=v2
+				end
 			end
 		end
-	end
-	for i,v in pairs(game:GetService("Players").LocalPlayer.Backpack:GetChildren()) do
-		if v and v:FindFirstChildOfClass("ModuleScript") and v:FindFirstChild("Setting") then
-			for i2,v2 in pairs(Normal2) do
-				require(v:FindFirstChild("Setting"))[i2]=v2
+		for i,v in pairs(game:GetService("Players").LocalPlayer.Character:GetChildren()) do
+			if v and v:FindFirstChildOfClass("ModuleScript") and v:FindFirstChild("Setting") then
+				for i2,v2 in pairs(Normal2) do
+
+					require(v:FindFirstChild("Setting"))[i2]=v2
+				end
 			end
 		end
-	end
-	for i,v in pairs(game:GetService("Players").LocalPlayer.Character:GetChildren()) do
-		if v and v:FindFirstChildOfClass("ModuleScript") and v:FindFirstChild("Setting") then
-			for i2,v2 in pairs(Normal2) do
-				require(v:FindFirstChild("Setting"))[i2]=v2
-			end
-		end
-	end
+	end)
 end
