@@ -7,8 +7,6 @@
     |_|  |_____\_____|______|_|  \_\ /_/    \_\_____/|_|  |_|_____|_| \_|     
     Created by H17S3
     https://www.youtube.com/watch?v=cL-d_GOXa28
-    
-    clickkill
 ]]
 
 repeat task.wait() until game:IsLoaded()
@@ -762,9 +760,18 @@ do
 			if plr.Team == game.Teams.Inmates then
 				local ohString1 = "Bright orange"
 				workspace.Remote.TeamEvent:FireServer(ohString1)
-			else
+			elseif plr.Team == game.Teams.Guards then
+
 				local ohString1 = "Bright blue"
 				workspace.Remote.TeamEvent:FireServer(ohString1)
+			elseif plr.Team == game.Teams.Criminals then
+				workspace.Remote.TeamEvent:FireServer("Bright orange")
+				wait(.3)
+				local crimpad = workspace["Criminals Spawn"].SpawnLocation
+				crimpad.CanCollide = false
+				crimpad.Transparency = 1
+				repeat task.wait()crimpad.CFrame = getpos() until plr.Team == game.Teams.Criminals
+				MoveToJunk(crimpad)
 			end
 		end,
 	}
@@ -787,6 +794,17 @@ do
 	end
 	function All_Guns()
 		local saved = game:GetService("Players").LocalPlayer.Character:GetPrimaryPartCFrame()
+		if game:GetService("MarketplaceService"):UserOwnsGamePassAsync(plr.UserId, 96651) then
+			game:GetService("Players").LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(workspace.Prison_ITEMS.giver["M4A1"].ITEMPICKUP.Position))
+			local ohInstance1 = game:GetService("Workspace").Prison_ITEMS.giver.M4A1:GetChildren()[6]
+			workspace.Remote.ItemHandler:InvokeServer(ohInstance1)
+			task.spawn(function()
+				for i =1,3 do
+					workspace.Remote.ItemHandler:InvokeServer(ohInstance1)
+				end		
+			end)
+			wait(.1)
+		end
 		game:GetService("Players").LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(workspace.Prison_ITEMS.giver["Remington 870"].ITEMPICKUP.Position))
 		for i =1,2 do
 			local ohInstance1 = game:GetService("Workspace").Prison_ITEMS.giver.M9:GetChildren()[6]
