@@ -79,7 +79,7 @@ do
 	Reload_Guns = {}
 	Whitelisted = {}
 	Parts = {}
-	Temp = {Esps={}}
+	Temp = {}
 	Whitelisted_ITEMS = {}
 end
 function MoveToJunk(v)
@@ -627,18 +627,11 @@ Add_Command = function(Name,Callback,Does,PlayerCommand,R)
 	end)
 end
 do
-	--[[
-	if UIS.TouchEnabled and not UIS.MouseEnabled then
-		Out.Size = UDim2.new(0.647, 0,0.684, 0)
-		Out.Position = UDim2.new(0.176, 0,0.146, 0)
-		CmdsIcon.Size = UDim2.new(0.092, 0,0.684, 0)
-		Temp.Phone = true
-	end
-	]]
-end
-do
 	--//Temp set up
 	Temp.CmdsC = false
+	Temp.Waiting2 = nil
+	Temp.Waiting = false
+	Temp.Esps={}
 end
 
 do
@@ -648,11 +641,14 @@ do
 	end
 	function WaitForRespawn()
 		task.spawn(function()
+			Temp.Waiting = true
 			local RepeatPos = getpos()
-			Temp.Waiting2 = plr.CharacterAdded:Connect(function(char)
-				Temp.Waiting = false
-				repeat task.wait() until char and char:FindFirstChild("HumanoidRootPart")
-				MoveTo(RepeatPos)
+			task.spawn(function()
+				Temp.Waiting2 = plr.CharacterAdded:Connect(function(char)
+					repeat task.wait() until char and char:FindFirstChild("HumanoidRootPart")
+					Temp.Waiting = false
+					MoveTo(RepeatPos)
+				end)
 			end)
 			repeat task.wait()
 				RepeatPos = getpos()
@@ -2795,7 +2791,7 @@ task.spawn(function()
 		end
 		pcall(function()
 			for i,v in pairs(plr.Backpack:GetChildren()) do
-				if v and not v:FindFirstChildOfClass("BoolValue") then
+				if v and not v:FindFirstChild("ISWHITELISTED") then
 					Whitelisted_ITEMS[#Whitelisted_ITEMS+1]=v
 					Instance.new("BoolValue",v).Name = "ISWHITELISTED"
 				end
@@ -2826,15 +2822,17 @@ task.spawn(function()
 		end
 		if #Reload_Guns>0 then
 			for i,v in pairs(Reload_Guns) do
-				if v then
-					task.spawn(function()
-						game:GetService("ReplicatedStorage").ReloadEvent:FireServer(v)
-					end)
-					wait()
-				end
-				if v == nil or v and v.Parent == nil then
-					Reload_Guns[i]=nil
-				end
+				pcall(function()
+					if v then
+						task.spawn(function()
+							game:GetService("ReplicatedStorage").ReloadEvent:FireServer(v)
+						end)
+						wait()
+					end
+					if v == nil or v and v.Parent == nil then
+						Reload_Guns[i]=nil
+					end
+				end)
 			end
 		end
 		if States.AntiShield then
@@ -3145,7 +3143,9 @@ function AdminChatted(Text,Speaker)
 	local TXT = string.lower(Text)
 	local SPLITED = TXT:split(" ")
 	Arg1_P = SPLITED[1]
-	local CmdsList = "[ADMIN]: !bring player, !cmds, !criminal player, !goto player, !kill [player,all], !fling [player], !car, !loopkill [player], !unloopkill [player], !tase [player,all]"
+	local CmdsList = "[ADMIN]: !bring player, !cmds, !criminal player, !goto player, !kill [player,all], !fling [player], !car, !loopkill [player]"
+	local CmdsList2 = "[ADMIN]: !unloopkill [player], !tase [player,all], !yard, !crimbase, !armory, !prison"
+
 	local Arg2_P = SPLITED[2]
 	local Arg3_P = SPLITED[3]
 	local Arg4_P = SPLITED[4]
@@ -3250,6 +3250,27 @@ function AdminChatted(Text,Speaker)
 			tase(r)
 		end
 	end
+	
+	if commandPLAYER("crimbase") then
+		local Pos = CFrame.new(-858.08990478516, 94.476051330566, 2093.8288574219)
+		bring(Speaker,Pos)
+	end
+	if commandPLAYER("tower") then
+		local Pos = CFrame.new(822, 131, 2588)
+		bring(Speaker,Pos)
+	end
+	if commandPLAYER("armory") then
+		local Pos  = CFrame.new(789, 100, 2260)
+		bring(Speaker,Pos)
+	end
+	if commandPLAYER("prison") then
+		local Pos = CFrame.new(918.77, 100, 2379.07)
+		bring(Speaker,Pos)
+	end
+	if commandPLAYER("yard") then
+		local Pos = CFrame.new(791, 98, 2498)
+		bring(Speaker,Pos)
+	end
 	if commandPLAYER("unloopkill") then
 		local r = FindPlayer(Arg2_P)
 		if Arg2_P=="all" then
@@ -3313,6 +3334,8 @@ function AdminChatted(Text,Speaker)
 	end
 	if commandPLAYER("cmds") then
 		Msg(Speaker,CmdsList)
+		wait(.1)
+		Msg(Speaker,CmdsList2)
 	end
 end
 
