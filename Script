@@ -34,7 +34,7 @@ do--//Instances
 	RunService = game:GetService("RunService")
 	gethui=gethui or nil
 	SearchBar = Instance.new("TextBox")
-	Folder.Name = "Tiger1.1Loaded"
+	Folder.Name = "Tiger_PL"
 	--
 	HasFireTouch = false
 	unloaded=false
@@ -82,6 +82,107 @@ do
 	Temp = {}
 	Whitelisted_ITEMS = {}
 end
+if game:FindFirstChild("Tiger_PL") then
+	ScreenGui:Destroy()
+	unloaded = true
+	Notif("Tiger admin is already loaded!")
+	return
+end
+do
+	function Tween(Obj,Prop,New,Time)
+		if not Time then Time = .5 end
+		task.spawn(function()
+			local TweenService = game:GetService("TweenService")
+			local info = TweenInfo.new(
+				Time, 
+				Enum.EasingStyle.Quart, 
+				Enum.EasingDirection.Out, 
+				0, 
+				false,
+				0
+			)
+			local propertyTable = {
+				[Prop] = New,
+			}
+
+			TweenService:Create(Obj, info, propertyTable):Play()
+		end)
+	end
+	--Loading.
+	Temp.Respawned_132 = false
+	local LoadingGUI = Instance.new("ScreenGui")
+	local Loading = Instance.new("Frame")
+	local UICorner = Instance.new("UICorner")
+	local UIStroke = Instance.new("UIStroke")
+	local Darken = Instance.new("Frame")
+	local Outter = Instance.new("Frame")
+	local UICorner_2 = Instance.new("UICorner")
+	local Tweener = Instance.new("Frame")
+	local UICorner_3 = Instance.new("UICorner")
+	local Text = Instance.new("TextLabel")
+	local UIGradient = Instance.new("UIGradient")
+	LoadingGUI.Name = "LoadingGUI"
+	LoadingGUI.Parent = (game:GetService("CoreGui") or gethui())
+	LoadingGUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+	Loading.Name = "Loading"
+	Loading.Parent = LoadingGUI
+	Loading.AnchorPoint = Vector2.new(0.5, 0.5)
+	Loading.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	Loading.BackgroundTransparency=1
+	Loading.Position = UDim2.new(0.5, 0, 0.5, 0)
+	Loading.Size = UDim2.new(0, 404, 0, 172)
+	UICorner.CornerRadius = UDim.new(0, 3)
+	UICorner.Parent = Loading
+	Darken.Name = "Darken"
+	Darken.Parent = Loading
+	Darken.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+	Darken.BackgroundTransparency = 1
+	Darken.BorderSizePixel = 0
+	Darken.Size = UDim2.new(0, 404, 0, 172)
+	Outter.Name = "Outter"
+	Outter.Parent = Darken
+	Outter.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+	Outter.Position = UDim2.new(0.297029704, 0, 0.645348847, 0)
+	Outter.Size = UDim2.new(0, 164, 0, 5)
+	UICorner_2.Parent = Outter
+	Tweener.Name = "Tweener"
+	Tweener.Parent = Outter
+	Tweener.BackgroundColor3 = Color3.fromRGB(3, 196, 255)
+	Tweener.Position = UDim2.new(-0.00175066688, 0, 0, 0)
+	Tweener.Size = UDim2.new(0, 0, 0, 5)
+	UICorner_3.Parent = Tweener
+	Text.Name = "Text"
+	Text.Parent = Loading
+	Text.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	Text.BackgroundTransparency = 1.000
+	Text.Position = UDim2.new(0.252475262, 0, 0.401162773, 0)
+	Text.Size = UDim2.new(0, 200, 0, 33)
+	Text.Font = Enum.Font.Gotham
+	Text.Text = "Loading"
+	Text.TextColor3 = Color3.fromRGB(255, 255, 255)
+	Text.TextSize = 18.000
+	task.spawn(function()
+		Text.Text = "Loading {Guis}"
+		game:GetService("ContentProvider"):PreloadAsync({
+			Commands,
+			Out,
+			Commands,
+		})
+		Tweener:TweenSize(UDim2.new(.1, 0,0, 5),"Out","Quart",.06)
+		wait(.1)
+		Tweener:TweenSize(UDim2.new(.5, 0,0, 5),"Out","Quart",.06)
+		Text.Text = "Loading {Scripts/Character}"
+		repeat task.wait() until Temp.Respawned_132 == true
+		Tweener.Size = UDim2.new(1,0,1,0)
+		wait(.7)
+		repeat wait() Tweener.Size = UDim2.new(1,0,1,0) until Tweener.Size == UDim2.new(1,0,1,0)
+		Text.Text = "Finished loading!"
+		wait(.4)
+		Loading:TweenPosition(Loading.Position-UDim2.new(0,0,1,0),"Out","Quart",.6)
+		wait(1.5)
+		Loading:Destroy()
+	end)
+end
 function MoveToJunk(v)
 	v.CFrame = CFrame.new(0,5^5,0)
 end
@@ -116,14 +217,14 @@ function Msg(player,Text)
 	local ohString2 = "All"
 	game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(ohString1, ohString2)
 end
-local http = game:GetService("HttpService")
-if writefile and isfile then
-	if isfile("Tiger.Admin") == false then
-		Settings = {
-			Discord_Invite_On_Execution = true
-		}
-		thingy = http:JSONEncode(Settings)
-		writefile("Tiger.Admin",thingy)
+if writefile and makefolder and readfile and isfile then
+	if isfile("Tiger Admin") == false or isfile("Tiger_Admin/Invite.json") == false then
+		makefolder("Tiger_Admin")
+		if isfile("Tiger_Admin/Invite.json") == false then
+			writefile("Tiger_Admin/Invite.json",game:GetService("HttpService"):JSONEncode({
+				Invite_To_Server = true
+			}))
+		end
 	end
 end
 do --//Main Gui
@@ -429,55 +530,34 @@ do --//Main Gui
 	function Notif(Text,Dur)
 		task.spawn(function()
 			if not Dur then Dur = 1.57 end
-			local NotifGuiScreen = Instance.new("ScreenGui")
-			local Frame = Instance.new("Frame")
-			local UIGradient = Instance.new("UIGradient")
+			local Notif = Instance.new("ScreenGui")
+			local Frame_1 = Instance.new("Frame")
 			local TextLabel = Instance.new("TextLabel")
-			local UICorner = Instance.new("UICorner")
-			local UIStroke = Instance.new("UIStroke")
-
-			NotifGuiScreen.Parent = (game:GetService("CoreGui") or gethui())
-			NotifGuiScreen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-
-			Frame.Parent = NotifGuiScreen
-			Frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-			Frame.Position = UDim2.new(0.00906095561, 0, 0.921446383, 0)+UDim2.new(0,0,.4,0)
-			Frame.Size = UDim2.new(0, 326, 0, 49)
-
-			UIGradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(127, 20, 148)), ColorSequenceKeypoint.new(0.29, Color3.fromRGB(82, 40, 174)), ColorSequenceKeypoint.new(0.64, Color3.fromRGB(184, 63, 11)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(255, 30, 0))}
-			UIGradient.Transparency = NumberSequence.new{NumberSequenceKeypoint.new(0.00, 0.30), NumberSequenceKeypoint.new(1.00, 0.30)}
-			UIGradient.Parent = Frame
-
-			TextLabel.Parent = Frame
+			Notif.Parent = (game:GetService("CoreGui") or gethui())
+			Notif.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+			Frame_1.Parent = Notif
+			Frame_1.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+			Frame_1.BackgroundTransparency=1
+			Frame_1.BorderSizePixel = 0
+			Frame_1.Position = UDim2.new(0, 0, 0.0500000007, 0)
+			Frame_1.Size = UDim2.new(1, 0, 0.100000001, 0)
+			TextLabel.Parent = Frame_1
 			TextLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 			TextLabel.BackgroundTransparency = 1.000
-			TextLabel.Position = UDim2.new(0, 0, -0.020833334, 0)
-			TextLabel.Size = UDim2.new(0, 326, 0, 49)
-			TextLabel.Font = Enum.Font.SourceSans
-			TextLabel.TextTransparency = .1
-			TextLabel.Text = tostring(Text) or "Missing text"
+			TextLabel.TextTransparency =1
+			TextLabel.Size = UDim2.new(1, 0, 1, 0)
+			TextLabel.Font = Enum.Font.Highway
+			TextLabel.Text = Text or "Text not found"
 			TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 			TextLabel.TextSize = 21.000
-			TextLabel.TextStrokeTransparency = 0.740
-			TextLabel.TextWrapped = true
-
-			UICorner.CornerRadius = UDim.new(0, 3)
-			UICorner.Parent = Frame
-
-			UIStroke.Parent = Frame
-			wait(.1)
-			Frame:TweenPosition(UDim2.new(0.00906095561, 0, 0.921446383, 0),"Out","Quart",.6)
+			Tween(Frame_1,"BackgroundTransparency",0.350,.5)
+			Tween(TextLabel,"TextTransparency",0,.5)
 			wait(Dur+.7)
-			Frame:TweenPosition(UDim2.new(0.00906095561, 0, 0.921446383, 0)+UDim2.new(0,0,.2,0),"Out","Quart",1)
-			wait(1)
-			NotifGuiScreen:Destroy()
+			Tween(Frame_1,"BackgroundTransparency",1,.5)
+			Tween(TextLabel,"TextTransparency",1,.5)
+			wait(.7)
+			Notif:Destroy()
 		end)
-		return
-	end
-	if game:FindFirstChild("Tiger1.1Loaded") then
-		ScreenGui:Destroy()
-		unloaded = true
-		Notif("Tiger admin is already loaded!")
 		return
 	end
 	Folder.Parent = game
@@ -789,65 +869,37 @@ do
 		end
 		return true
 	end
+	function GetGun(Item,Ignore)
+		local saved = game:GetService("Players").LocalPlayer.Character:GetPrimaryPartCFrame()
+		if workspace.Prison_ITEMS.giver:FindFirstChild(Item) and workspace.Prison_ITEMS.giver:FindFirstChild(Item):FindFirstChild("ITEMPICKUP") then
+			Item =workspace.Prison_ITEMS.giver:FindFirstChild(Item)
+			local ohInstance1 = Item:FindFirstChildOfClass("Part")
+			MoveTo(CFrame.new(ohInstance1.Position))
+			wait()
+			repeat wait()
+				local ohInstance1 = Item:FindFirstChildOfClass("Part")
+				MoveTo(CFrame.new(ohInstance1.Position))
+				task.spawn(function()
+					workspace.Remote.ItemHandler:InvokeServer(ohInstance1)
+				end)
+				wait()
+			until plr.Backpack:FindFirstChild(Item.Name) or plr.Character:FindFirstChild(Item.Name)
+		end
+		if Ignore ~= true then
+			plr.Character:SetPrimaryPartCFrame(Ignore or saved)
+		end
+	end
 	function All_Guns()
 		local saved = game:GetService("Players").LocalPlayer.Character:GetPrimaryPartCFrame()
 		if game:GetService("MarketplaceService"):UserOwnsGamePassAsync(plr.UserId, 96651) then
-			game:GetService("Players").LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(workspace.Prison_ITEMS.giver["M4A1"].ITEMPICKUP.Position))
-			local ohInstance1 = game:GetService("Workspace").Prison_ITEMS.giver.M4A1:GetChildren()[6]
-			workspace.Remote.ItemHandler:InvokeServer(ohInstance1)
-			task.spawn(function()
-				for i =1,3 do
-					workspace.Remote.ItemHandler:InvokeServer(ohInstance1)
-				end		
-			end)
-			wait(.1)
+			GetGun("M4A1",true)
 		end
-		game:GetService("Players").LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(workspace.Prison_ITEMS.giver["Remington 870"].ITEMPICKUP.Position))
-		for i =1,2 do
-			local ohInstance1 = game:GetService("Workspace").Prison_ITEMS.giver.M9:GetChildren()[6]
-			workspace.Remote.ItemHandler:InvokeServer(ohInstance1)
-			task.spawn(function()
-				for i =1,3 do
-					workspace.Remote.ItemHandler:InvokeServer(ohInstance1)
-				end		
-			end)
-			local ohInstance2 = workspace.Prison_ITEMS.giver["Remington 870"].ITEMPICKUP
-			workspace.Remote.ItemHandler:InvokeServer(ohInstance2)
-			task.spawn(function()
-				for i =1,3 do
-					workspace.Remote.ItemHandler:InvokeServer(ohInstance2)
-				end		
-			end)
-			local ohInstance3 = game:GetService("Workspace").Prison_ITEMS.giver["AK-47"]:GetChildren()[51]
-			wait()
-			game:GetService("Players").LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(game:GetService("Workspace").Prison_ITEMS.giver["AK-47"]:GetChildren()[51].Position+Vector3.new(0,4,0)))
-			workspace.Remote.ItemHandler:InvokeServer(ohInstance3)
-			task.spawn(function()
-				for i =1,3 do
-					workspace.Remote.ItemHandler:InvokeServer(ohInstance3)
-				end		
-			end)
-		end
+		GetGun("AK-47",true)
+		task.spawn(function()
+			GetGun("Remington 870",true)
+		end)
+		GetGun("M9",true)
 		game:GetService("Players").LocalPlayer.Character:SetPrimaryPartCFrame(saved)
-	end
-	function GetGun(String,a)
-		local saved = game:GetService("Players").LocalPlayer.Character:GetPrimaryPartCFrame()
-		if String and game:GetService("Workspace").Prison_ITEMS.giver:FindFirstChild(String) then
-			local RandomPart = game:GetService("Workspace").Prison_ITEMS.giver:FindFirstChild(String):FindFirstChildOfClass("Part")
-			MoveTo(CFrame.new(RandomPart.Position))
-			wait()
-			for i =1,3 do
-				task.spawn(function()
-					workspace.Remote.ItemHandler:InvokeServer(RandomPart)
-				end)
-			end
-		else
-			return
-		end
-		if not plr.Backpack:FindFirstChild(String) then
-			GetGun(String,saved)
-		end
-		game:GetService("Players").LocalPlayer.Character:SetPrimaryPartCFrame(a or saved)
 	end
 	function GetTeam()
 		return plr.TeamColor.Name
@@ -935,6 +987,9 @@ do
 		Parts[1] = Part
 	end
 	function MKILL(target,STOP,P)
+		if target == plr or target == plr.Name then
+			return
+		end
 		if typeof(target):lower() == "string" and game:GetService("Players"):FindFirstChild(target) then
 			target = game:GetService("Players"):FindFirstChild(target)
 		end
@@ -1091,7 +1146,7 @@ do
 				return
 			end
 		end
-		if player == plr then
+		if player == plr or player == plr.Name then
 			return Notif("Can't kill yourself????")
 		end
 		local Gun = ReturnGun()
@@ -1196,6 +1251,7 @@ do
 		end)
 	end
 	function MoveTo(Pos,t)
+		unsit()
 		pcall(function()
 			if typeof(Pos):lower() == "position" then
 				Pos = CFrame.new(Pos)
@@ -1262,7 +1318,8 @@ do
 	end
 	--//Shits 100 lines :skull:
 	function bring(player,pos,Type,Extra)
-		if player then
+
+		if player and player ~= plr and player ~= plr.Name then
 			local lastteam = plr.TeamColor.Name
 			if plr.Team ~= game.Teams.Guards then
 				local ohString1 = "Bright blue"
@@ -1526,6 +1583,10 @@ do
 		local Args = GetArgs(Args)
 		GetGun("M9")
 	end,"Gets m9")
+	Add_Command("m4a1",function(Args)
+		local Args = GetArgs(Args)
+		GetGun("M4A1")
+	end,"Gets M4A1")
 	Add_Command("tase",function(Args)
 		local Args = GetArgs(Args)
 		local r = FindPlayer(Args[2])
@@ -2216,15 +2277,10 @@ do
 		ChangeTeam(game.Teams.Inmates)
 	end,"puts you into guards team")
 	Add_Command("noinvite",function(Args)
-		local Settings = {
-			Discord_Invite_On_Execution = false
-		}
-		local http = game:GetService("HttpService")
-		local thingy = http:JSONEncode(Settings)
-		if writefile then
-			writefile("Tiger.Admin",thingy)
+		if writefile and readfile then
+			writefile("Tiger_Admin/Invite.json",game:GetService("HttpService"):JSONEncode({Invite_To_Server=false}))
 		end
-		Notif("Invite disabled")
+		Notif("Invite has been disabled")
 	end,"Disables invite command")
 	Add_Command("criminal",function(Args)
 		local Args = GetArgs(Args)
@@ -2676,6 +2732,7 @@ do
 end
 plr.CharacterAdded:Connect(function(char)
 	if unloaded then return end
+	Temp.Respawned_132 = true
 	task.spawn(function()
 		--//Antibring
 		if States.Antibring then
@@ -3089,33 +3146,22 @@ task.spawn(function()
 	end
 end)
 task.spawn(function()
-	if isfile and isfile("Tiger.Admin") then
-		local requesttype = nil
-		if identifyexecutor() == "Synapse X" then
-			requesttype = syn.request;
-		else
-			requesttype = http_request;
-		end
-		local http = game:GetService("HttpService")
-		local file = http:JSONDecode(readfile("Tiger.Admin"))
-		if file.Discord_Invite_On_Execution == true then
-			local http = game:GetService('HttpService') 
-			local req = requesttype
-			if req then
-				requesttype({
-					Url = 'http://127.0.0.1:6463/rpc?v=1',
-					Method = 'POST',
-					Headers = {
-						['Content-Type'] = 'application/json',
-						Origin = 'https://discord.com'
-					},
-					Body = http:JSONEncode({
-						cmd = 'INVITE_BROWSER',
-						nonce = http:GenerateGUID(false),
-						args = {code = 'zj5xRp3ZKn'}
-					})
+	if writefile and makefolder and readfile and isfile then
+		if game:GetService("HttpService"):JSONDecode(readfile("Tiger_Admin/Invite.json")).Invite_To_Server then
+			local Request_ = (syn and syn.request) or http_request or request
+			Request_({
+				Url = 'http://127.0.0.1:6463/rpc?v=1',
+				Method = 'POST',
+				Headers = {
+					['Content-Type'] = 'application/json',
+					Origin = 'https://discord.com'
+				},
+				Body = game:GetService("HttpService"):JSONEncode({
+					cmd = 'INVITE_BROWSER',
+					nonce = game:GetService("HttpService"):GenerateGUID(false),
+					args = {code = 'zj5xRp3ZKn'}
 				})
-			end
+			})
 		end
 	end
 end)
@@ -3178,6 +3224,7 @@ function AdminChatted(Text,Speaker)
 					Done = true
 				end
 			until Done
+			unsit()
 		end)
 		wait(.1)
 		MoveTo(org)
@@ -3250,7 +3297,7 @@ function AdminChatted(Text,Speaker)
 			tase(r)
 		end
 	end
-	
+
 	if commandPLAYER("crimbase") then
 		local Pos = CFrame.new(-858.08990478516, 94.476051330566, 2093.8288574219)
 		bring(Speaker,Pos)
@@ -3341,17 +3388,19 @@ end
 
 plr:GetMouse().Button1Up:Connect(function()
 	local Target = plr:GetMouse().Target
-	if Target and Target.Parent and Target.Parent:FindFirstChildOfClass("Humanoid") and game:GetService("Players"):FindFirstChild(Target.Parent.Name) or game:GetService("Players"):FindFirstChild(Target.Parent.Parent.Name) then
-		local TargetModelPlr = game:GetService("Players"):FindFirstChild(Target.Parent.Name) or game:GetService("Players"):FindFirstChild(Target.Parent.Parent.Name)
-		if States.ClickArrest then
-			if TargetModelPlr.Team ~= game:GetService("Teams").Guards then
-				local ohInstance1 = Target
-				workspace.Remote.arrest:InvokeServer(ohInstance1)
+	if States.ClickArrest or States.ClickKill then
+		if Target and Target.Parent and Target.Parent:FindFirstChildOfClass("Humanoid") and game:GetService("Players"):FindFirstChild(Target.Parent.Name) or game:GetService("Players"):FindFirstChild(Target.Parent.Parent.Name) then
+			local TargetModelPlr = game:GetService("Players"):FindFirstChild(Target.Parent.Name) or game:GetService("Players"):FindFirstChild(Target.Parent.Parent.Name)
+			if States.ClickArrest then
+				if TargetModelPlr.Team ~= game:GetService("Teams").Guards then
+					local ohInstance1 = Target
+					workspace.Remote.arrest:InvokeServer(ohInstance1)
+				end
 			end
-		end
-		if States.ClickKill then
-			if TargetModelPlr.Team ~= game:GetService("Teams").Guards then
-				kill(TargetModelPlr)
+			if States.ClickKill then
+				if TargetModelPlr.Team ~= game:GetService("Teams").Guards then
+					kill(TargetModelPlr)
+				end
 			end
 		end
 	end
