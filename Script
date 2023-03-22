@@ -190,6 +190,9 @@ for i,v in pairs(workspace["Criminals Spawn"]:GetChildren()) do
 		MoveToJunk(v)
 	end
 end
+function UneqTools()
+	plr.Character:FindFirstChildOfClass("Humanoid"):UnequipTools()
+end
 workspace.FallenPartsDestroyHeight = -math.huge
 task.spawn(function()
 	local FirePart =Instance.new("Part")
@@ -1914,6 +1917,7 @@ do
 				cc["AutoFire"] = true
 			end
 			Reload_Guns[#Reload_Guns+1]=Tool
+			UneqTools()
 		else
 			Notif("You need to hold the tool you want to mod!")
 		end
@@ -1938,6 +1942,7 @@ do
 				cc["AutoFire"] = true
 			end
 			Reload_Guns[#Reload_Guns+1]=Tool
+			UneqTools()
 		else
 			Notif("You need to hold the tool you want to mod!")
 		end
@@ -1952,6 +1957,7 @@ do
 			local cc = require(Tool.GunStates)
 			cc["AutoFire"] = true
 			Reload_Guns[#Reload_Guns+1]=Tool
+			UneqTools()
 		else
 			Notif("You need to hold the tool you want to mod!")
 		end
@@ -1966,6 +1972,7 @@ do
 			local cc = require(Tool.GunStates)
 			cc["FireRate"] = -math.huge
 			Reload_Guns[#Reload_Guns+1]=Tool
+			UneqTools()
 		else
 			Notif("You need to hold the tool you want to mod!")
 		end
@@ -1983,6 +1990,7 @@ do
 			cc["StoredAmmo"] = math.huge
 			cc["AmmoPerClip"] = math.huge
 			cc["CurrentAmmo"] = math.huge
+			UneqTools()
 		else
 			Notif("You need to hold the tool you want to mod!")
 		end
