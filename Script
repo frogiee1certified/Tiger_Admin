@@ -85,7 +85,6 @@ end
 if game:FindFirstChild("Tiger_PL") then
 	ScreenGui:Destroy()
 	unloaded = true
-	Notif("Tiger admin is already loaded!")
 	return
 end
 do
@@ -1914,7 +1913,7 @@ do
 				cc["Bullets"] = 100
 				cc["AutoFire"] = true
 			end
-			Reload_Guns[#Reload_Guns]=Tool
+			Reload_Guns[#Reload_Guns+1]=Tool
 		else
 			Notif("You need to hold the tool you want to mod!")
 		end
@@ -1938,7 +1937,7 @@ do
 				cc["Bullets"] = 1
 				cc["AutoFire"] = true
 			end
-			Reload_Guns[#Reload_Guns]=Tool
+			Reload_Guns[#Reload_Guns+1]=Tool
 		else
 			Notif("You need to hold the tool you want to mod!")
 		end
@@ -1952,7 +1951,7 @@ do
 			end
 			local cc = require(Tool.GunStates)
 			cc["AutoFire"] = true
-			Reload_Guns[#Reload_Guns]=Tool
+			Reload_Guns[#Reload_Guns+1]=Tool
 		else
 			Notif("You need to hold the tool you want to mod!")
 		end
@@ -1966,7 +1965,7 @@ do
 			end
 			local cc = require(Tool.GunStates)
 			cc["FireRate"] = -math.huge
-			Reload_Guns[#Reload_Guns]=Tool
+			Reload_Guns[#Reload_Guns+1]=Tool
 		else
 			Notif("You need to hold the tool you want to mod!")
 		end
@@ -1978,12 +1977,12 @@ do
 			if not Tool:FindFirstChild("GunStates") then
 				return Notif("Needs to be a gun!")
 			end
+			Reload_Guns[#Reload_Guns+1]=Tool
 			local cc = require(Tool.GunStates)
 			cc["MaxAmmo"] = math.huge
 			cc["StoredAmmo"] = math.huge
 			cc["AmmoPerClip"] = math.huge
 			cc["CurrentAmmo"] = math.huge
-			Reload_Guns[#Reload_Guns]=Tool
 		else
 			Notif("You need to hold the tool you want to mod!")
 		end
@@ -2877,18 +2876,10 @@ task.spawn(function()
 		if unloaded then
 			break
 		end
-		if #Reload_Guns>0 then
-			for i,v in pairs(Reload_Guns) do
-				pcall(function()
-					if v then
-						task.spawn(function()
-							game:GetService("ReplicatedStorage").ReloadEvent:FireServer(v)
-						end)
-						wait()
-					end
-					if v == nil or v and v.Parent == nil then
-						Reload_Guns[i]=nil
-					end
+		for i,v in pairs(Reload_Guns) do
+			if v then
+				task.spawn(function()
+					game:GetService("ReplicatedStorage").ReloadEvent:FireServer(v)
 				end)
 			end
 		end
