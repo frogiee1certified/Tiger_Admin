@@ -877,7 +877,6 @@ do
 			Item =workspace.Prison_ITEMS.giver:FindFirstChild(Item)
 			local ohInstance1 = Item:FindFirstChildOfClass("Part")
 			MoveTo(CFrame.new(ohInstance1.Position))
-			wait()
 			repeat wait()
 				local ohInstance1 = Item:FindFirstChildOfClass("Part")
 				MoveTo(CFrame.new(ohInstance1.Position))
@@ -1318,7 +1317,7 @@ do
 		print("Refreshed")
 		return
 	end
-	--//Shits 100 lines :skull:
+	--//
 	function bring(player,pos,Type,Extra)
 
 		if player and player ~= plr and player ~= plr.Name then
@@ -1345,6 +1344,9 @@ do
 			end
 			local Goto = pos
 			repeat task.wait() Handcuffs = plr.Backpack:FindFirstChild("Handcuffs")  until Handcuffs and Handcuffs:FindFirstChild("Handle")
+			if not Handcuffs or not Handcuffs:FindFirstChild("Handle") or not Handcuffs.Handle:FindFirstChildOfClass("SpecialMesh") then
+				return Notif("Failed to bring due to a rare error!")
+			end
 			Handcuffs.Handle:FindFirstChildOfClass("SpecialMesh"):Destroy()
 			wait(.1)
 			if pos then
@@ -1660,11 +1662,10 @@ do
 		local Args = GetArgs(Args)
 		local Args = {}
 		for i =1,100 do
-			Args[#Args+1] = { --//shot my gun and got remote so why not
-				["RayObject"] = Ray.new(Vector3.new(943.0889282226562, 101.4899673461914, 2457.429931640625), Vector3.new(749.2162475585938, 116.06295013427734, 255.35150146484375)), 
-				["Distance"] = 100, 
-				["Cframe"] = CFrame.new(947.794922, 101.702385, 2458.55518, 0.632757664, -0.356117994, 0.687602937, 1.49011612e-08, 0.887974501, 0.459892809, -0.774349988, -0.291000694, 0.561872602), 
-				["Hit"] = game:GetService("Workspace")["Prison_Cellblock"]["a_front"].Part
+			Args[#Args+1] = {
+				["RayObject"] = Ray.new(Vector3.new(1253.7749, 211.21637, 2092.66943), Vector3.new(-749.737671, 13.3956146, 278.772064)),
+				["Distance"] = 796.9385986328125,
+				["Cframe"] = CFrame.new(877.76825, 217.326797, 2233.42017, 0.346436232, 0.0171507336, -0.937916756, 0, 0.999832869, 0.0182829313, 0.938073516, -0.00633386988, 0.346378326)
 			}
 		end
 		local Return = false
@@ -1672,7 +1673,9 @@ do
 		task.spawn(function()
 			Gun = plr.Backpack.ChildAdded:Wait()
 		end)
-		GetGun("M9")
+		task.spawn(function()
+			GetGun("M9")
+		end)
 		repeat task.wait() until Gun
 		task.spawn(function()
 			repeat task.wait() until not plr.Character:FindFirstChild("M9") and not plr.Backpack:FindFirstChild("M9")
@@ -1680,7 +1683,7 @@ do
 			Execute_Command("!crashserver","!crashserver")
 			return
 		end)
-		for i =1,10000 do
+		for i =1,100000 do
 			task.spawn(function()
 				game:GetService("ReplicatedStorage").ShootEvent:FireServer(Args,Gun)
 			end)
@@ -1820,16 +1823,6 @@ do
 		end
 		return game:GetService("TeleportService"):TeleportToPlaceInstance(game['PlaceId'], Ids[math.random(1, #Ids)])
 	end,"Joins another server")
-	Add_Command("getusers",function(Args)
-		local Args = GetArgs(Args)
-		local Concat = {}
-		for i,v in pairs(game:GetService("Players"):GetChildren()) do
-			if v and v.Character and v.Character:FindFirstChild("Animate") and not v.Character.Animate:FindFirstChild("ScaleDampeningPercent") then
-				Concat[#Concat+1]=v.Name..", "
-			end
-		end
-		Notif("users: "..tostring(table.concat(Concat)),5)
-	end,"Shows all tiger admin users")
 	Add_Command("loopkill",function(Args)
 		local Args = GetArgs(Args)
 		local r =FindPlayer(Args[2])
@@ -2765,9 +2758,6 @@ plr.CharacterAdded:Connect(function(char)
 		end
 		--//AutoItems
 		repeat task.wait() until char and char:FindFirstChildOfClass("Humanoid")
-		pcall(function()
-			plr.Character.Animate.ScaleDampeningPercent:Destroy()
-		end)
 		task.spawn(function()
 			if unloaded then return end
 			wait(.6)
