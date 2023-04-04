@@ -43,6 +43,10 @@ local Games = {
 		PlaceId = 662417684,
 		Url = "https://raw.githubusercontent.com/H17S32/Tiger_Intact/main/Lucky%20Blocks"
 	},
+	[10]={
+		PlaceId = 6403373529,
+		Url = "https://raw.githubusercontent.com/H17S32/Tiger_Intact/main/SlapBattles"
+	},
 }
 local Run = function(HTTP)
 	Loadstring(Gamem:HttpGetAsync(HTTP))()
