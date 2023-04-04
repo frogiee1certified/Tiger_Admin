@@ -33,11 +33,15 @@ local Games = {
 	},
 	[7]={
 		PlaceId = 2413927524,
-		Url = "https://raw.githubusercontent.com/H17S32/Tiger_Admin/main/The_Rake"
+		Url = "https://raw.githubusercontent.com/H17S32/Tiger_Intact/main/TheRake"
 	},
 	[8]={
 		PlaceId = 6741970382,
-		Url = "https://raw.githubusercontent.com/H17S32/Tiger_Admin/main/Zombie%20lab"
+		Url = "https://raw.githubusercontent.com/H17S32/Tiger_Intact/main/ZombieLab"
+	},
+	[9]={
+		PlaceId = 662417684,
+		Url = "https://raw.githubusercontent.com/H17S32/Tiger_Intact/main/Lucky%20Blocks"
 	},
 }
 local Run = function(HTTP)
