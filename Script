@@ -38,16 +38,12 @@ do--//Instances
 	--
 	HasFireTouch = false
 	unloaded=false
+	SavedAdmins = {}
 	firetouchinterest=firetouchinterest
 	firetouch = firetouchinterest
 	oldprint = print
 	IsBringing = false
 	loopkilling = {}
-	print = function(...)
-		if Debug then
-			oldprint(...)
-		end
-	end
 end
 do
 	--//Top functions & tables
@@ -226,6 +222,17 @@ if writefile and makefolder and readfile and isfile then
 			writefile("Tiger_Admin/Invite.json",game:GetService("HttpService"):JSONEncode({
 				Invite_To_Server = true
 			}))
+		end
+		if isfile("Tiger_Admin/SavedAdmins.json") == false then
+			writefile("Tiger_Admin/SavedAdmins.json",game:GetService("HttpService"):JSONEncode({}))
+		else
+			local Content = game:GetService("HttpService"):JSONDecode(readfile("Tiger_Admin/SavedAdmins.json"))
+			for i,v in pairs(Content) do
+				if v then
+					print(v)
+					States.Admined[#States.Admined+1] = v
+				end
+			end
 		end
 	end
 end
@@ -667,6 +674,15 @@ FindPlayer = function(h,h2)
 			if n.Name:lower():match("^" .. h:lower()) or n.DisplayName:lower():match("^" .. h:lower()) then
 				return n
 			end
+		end
+	end
+	return nil
+end
+FindString = function(String,Table)
+	String = String:gsub("%s+", "")
+	for m, n in pairs(Table) do
+		if n:lower():match("^" .. String:lower()) then
+			return n
 		end
 	end
 	return nil
@@ -1130,6 +1146,37 @@ do
 		wait()
 		MoveTo(a)
 
+	end
+	function Crash()
+		local Bullets = {}
+		local Player = plr
+		for i = 1,10 do
+			Bullets[#Bullets+1] = {
+				["RayObject"] = Ray.new(Vector3.new(990.272583, 101.489975, 2362.74878), Vector3.new(-799.978333, 0.23157759, -5.88794518)),
+				["Distance"] = 198.9905242919922,
+				["Cframe"] = CFrame.new(894.362549, 101.288307, 2362.53491, -0.0123058055, 0.00259522465, -0.999920964, 3.63797837e-12, 0.999996722, 0.00259542116, 0.999924302, 3.19387436e-05, -0.0123057645),
+			}
+		end
+		if #game:GetService("Teams").Guards:GetPlayers() >7 then
+			GetGun("M9")
+		else
+			ChangeTeam(game.Teams.Guards)
+		end
+		repeat task.wait() until Player.Backpack:FindFirstChild("M9") or Player.Character:FindFirstChild("M9") 
+		game:GetService("ReplicatedStorage").ReloadEvent:FireServer(Player.Backpack:FindFirstChild("M9") or Player.Character:FindFirstChild("M9"))
+		while task.wait() do
+			local Gun = Player.Backpack:FindFirstChild("M9") or Player.Character:FindFirstChild("M9") 
+			if not Gun or not GetHumanoid() or GetHumanoid() and GetHumanoid().Health <1  then
+				task.wait(4)--//Ping cool down
+				break
+			end
+			coroutine.wrap(function()
+				game:GetService("ReplicatedStorage").ShootEvent:FireServer(Bullets,Gun)
+			end)()
+			coroutine.wrap(function()
+				game:GetService("ReplicatedStorage").ReloadEvent:FireServer(Gun)
+			end)()
+		end
 	end
 	function ReturnGun()
 		for i,v in pairs(plr.Backpack:GetChildren()) do
@@ -1658,51 +1705,7 @@ do
 		end)
 	end,"Brings a car to your location")
 	Add_Command("crashserver",function(Args)
-		Notif("Attemping to crash the server.",5)
-		local Args = GetArgs(Args)
-		local Args = {}
-		for i =1,100 do
-			Args[#Args+1] = {
-				["RayObject"] = Ray.new(Vector3.new(1253.7749, 211.21637, 2092.66943), Vector3.new(-749.737671, 13.3956146, 278.772064)),
-				["Distance"] = 796.9385986328125,
-				["Cframe"] = CFrame.new(877.76825, 217.326797, 2233.42017, 0.346436232, 0.0171507336, -0.937916756, 0, 0.999832869, 0.0182829313, 0.938073516, -0.00633386988, 0.346378326)
-			}
-		end
-		local Return = false
-		local Gun = nil
-		task.spawn(function()
-			Gun = plr.Backpack.ChildAdded:Wait()
-		end)
-		task.spawn(function()
-			GetGun("M9")
-		end)
-		repeat task.wait() until Gun
-		task.spawn(function()
-			repeat task.wait() until not plr.Character:FindFirstChild("M9") and not plr.Backpack:FindFirstChild("M9")
-			Return = true
-			Execute_Command("!crashserver","!crashserver")
-			return
-		end)
-		for i =1,100000 do
-			task.spawn(function()
-				game:GetService("ReplicatedStorage").ShootEvent:FireServer(Args,Gun)
-			end)
-			game:GetService("RunService").RenderStepped:Wait()
-		end
-		while task.wait(4) do
-			if Return then
-				break
-			end
-			task.spawn(function()
-				if Gun then
-					for i =1,5 do
-						task.spawn(function()
-							game:GetService("ReplicatedStorage").ShootEvent:FireServer(Args, Gun)
-						end)
-					end
-				end
-			end)
-		end
+		Crash()
 	end,"Attempts to shutdown the server")
 	Add_Command("re",function(Args)
 		local Args = GetArgs(Args)
@@ -1879,6 +1882,57 @@ do
 			NotFound()
 		end
 	end,"unwhitelists a player","PLAYER_COMMAND")
+	Add_Command("admins",function(Args)
+		local Args = GetArgs(Args)
+		local Found = ""
+		for i,v in pairs(States.Admined) do
+			Found = Found..v.." "
+		end
+		Notif(Found,3)
+	end,"Shows you all the players you admined")
+	Add_Command("autoadmin",function(Args)
+		local Args = GetArgs(Args)
+		local r =FindPlayer(Args[2])
+		if r then
+			States.Admined[#States.Admined+1]=r.Name
+			Notif("Admined "..r.Name)
+			Msg(r,"You have been admined say !cmds to get started!")
+			SavedAdmins[#SavedAdmins+1] = r.Name
+			if writefile and readfile then
+				local New = {}
+				local Content = game:GetService("HttpService"):JSONDecode(readfile("Tiger_Admin/SavedAdmins.json"))
+				for i,v in pairs(Content) do
+					if v then
+						table.insert(New,v)
+					end
+				end
+				table.insert(New,r.Name)
+				writefile("Tiger_Admin/SavedAdmins.json",game:GetService("HttpService"):JSONEncode(New))
+			end
+		else
+			NotFound()
+		end
+	end,"when you execute script it saves all admins","PLAYER_COMMAND")
+	Add_Command("unautoadmin",function(Args)
+		local Args = GetArgs(Args)
+		if writefile and readfile then
+			local Content = game:GetService("HttpService"):JSONDecode(readfile("Tiger_Admin/SavedAdmins.json"))
+			local Found = FindString(Args[2],Content)
+			local New = {}
+			if Found then
+				for i,v in pairs(Content) do
+					warn(v)
+					if v and v ~= Found then
+						table.insert(New,v)
+					else
+						warn("removed")
+					end
+				end
+				Notif("Removed admin from player")
+			end
+			writefile("Tiger_Admin/SavedAdmins.json",game:GetService("HttpService"):JSONEncode(New))
+		end
+	end,"removes autoadmin from a player","PLAYER_COMMAND")
 	Add_Command("admin",function(Args)
 		local Args = GetArgs(Args)
 		local r =FindPlayer(Args[2])
@@ -3179,7 +3233,7 @@ function AdminChatted(Text,Speaker)
 	local SPLITED = TXT:split(" ")
 	Arg1_P = SPLITED[1]
 	local CmdsList = "[ADMIN]: !bring player, !cmds, !criminal player, !goto player, !kill [player,all], !fling [player], !car, !loopkill [player]"
-	local CmdsList2 = "[ADMIN]: !unloopkill [player], !tase [player,all], !yard, !crimbase, !armory, !prison"
+	local CmdsList2 = "[ADMIN]: !unloopkill [player], !tase [player,all], !yard, !crimbase, !armory, !prison, !opendoors"
 
 	local Arg2_P = SPLITED[2]
 	local Arg3_P = SPLITED[3]
@@ -3337,6 +3391,26 @@ function AdminChatted(Text,Speaker)
 			Msg(Speaker,"[ADMIN]: Player not found!")
 			NotFound()
 		end
+	end
+	if commandPLAYER("opendoors") then
+		local LastTeam =plr.TeamColor.Name
+		ChangeTeam(game.Teams.Guards)
+		wait(.7)
+		task.spawn(function()
+			local Arg_1 = game:GetService("Workspace")["Prison_ITEMS"].buttons["Prison Gate"]["Prison Gate"]
+			local Event = game:GetService("Workspace").Remote.ItemHandler
+			Event:InvokeServer(Arg_1)
+		end)
+		for i,v in pairs(game:GetService("Workspace").Doors:GetChildren()) do
+			if v then
+				if v:FindFirstChild("block") and v:FindFirstChild("block"):FindFirstChild("hitbox") then
+					firetouchinterest(game.Players.LocalPlayer.Character.HumanoidRootPart,v.block.hitbox,0)
+					firetouchinterest(game.Players.LocalPlayer.Character.HumanoidRootPart,v.block.hitbox,1)
+				end
+			end
+		end
+		wait(1)
+		Last_Team(LastTeam)
 	end
 	if commandPLAYER("criminal") then
 		local r = FindPlayer(Arg2_P)
