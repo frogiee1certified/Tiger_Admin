@@ -497,7 +497,7 @@ do --//Main Gui
 	SearchBar.PlaceholderColor3 = Color3.fromRGB(178, 178, 178)
 	SearchBar.PlaceholderText = "Search here"
 	SearchBar.Text = ""
-	SearchBar.TextColor3 = Color3.fromRGB(0, 0, 0)
+	SearchBar.TextColor3 = Color3.fromRGB(234, 234, 234)
 	SearchBar.TextSize = 14.000
 	local function dragify(Frame) --//shit annoying
 		local dragToggle = nil
@@ -713,6 +713,9 @@ Add_Command = function(Name,Callback,Does,PlayerCommand,R)
 			CloneTXT.Visible = true
 			if Does and Does == true or Does == "true" or PlayerCommand == true then
 				CloneTXT.Visible = false
+				CloneTXT.Changed:Connect(function()
+					CloneTXT.Visible = false
+				end)
 			end
 			CommandsGot+=1
 			CommandsRawList[#CommandsRawList+1]=CloneTXT
@@ -1365,8 +1368,31 @@ do
 		return
 	end
 	--//
+	function FixHats(Hats)
+		local function FindHat(a)
+			for i,v in pairs(Hats) do
+				if v and v == a then
+					return v
+				end
+			end
+			return nil
+		end
+		--Fix hats 2
+		for i,v in pairs(Hats) do
+			if v then
+				pcall(function()
+					local Hat = v.Hat
+					local NewWeld = Instance.new("Weld",Hat.Handle)
+					NewWeld.Part0 = Hat.Handle
+					NewWeld.Part1 = plr.Character.Head
+					NewWeld.C0 = v.OldPosition
+					NewWeld.C1 = v.OldPosition2
+					Hat.Handle.Anchored = false
+				end)
+			end
+		end
+	end
 	function bring(player,pos,Type,Extra)
-
 		if player and player ~= plr and player ~= plr.Name then
 			local lastteam = plr.TeamColor.Name
 			if plr.Team ~= game.Teams.Guards then
@@ -1394,7 +1420,11 @@ do
 			if not Handcuffs or not Handcuffs:FindFirstChild("Handle") or not Handcuffs.Handle:FindFirstChildOfClass("SpecialMesh") then
 				return Notif("Failed to bring due to a rare error!")
 			end
-			Handcuffs.Handle:FindFirstChildOfClass("SpecialMesh"):Destroy()
+			
+			player.Character:FindFirstChildOfClass("Humanoid"):RemoveAccessories()
+			if Type ~= "a" then
+				Handcuffs.Handle:FindFirstChildOfClass("SpecialMesh"):Destroy()
+			end
 			wait(.1)
 			if pos then
 				MoveTo(pos)
@@ -1426,30 +1456,7 @@ do
 					Instance.new("Humanoid",plr.Character)
 				end)
 			end
-			do
-				local function FindHat(a)
-					for i,v in pairs(Hats) do
-						if v and v == a then
-							return v
-						end
-					end
-					return nil
-				end
-				--Fix hats 2
-				for i,v in pairs(Hats) do
-					if v then
-						pcall(function()
-							local Hat = v.Hat
-							local NewWeld = Instance.new("Weld",Hat.Handle)
-							NewWeld.Part0 = Hat.Handle
-							NewWeld.Part1 = plr.Character.Head
-							NewWeld.C0 = v.OldPosition
-							NewWeld.C1 = v.OldPosition2
-							Hat.Handle.Anchored = false
-						end)
-					end
-				end
-			end
+			FixHats(Hats)
 			repeat task.wait()
 				pcall(function()
 					plr.Character:FindFirstChildOfClass("Humanoid"):EquipTool(Handcuffs)
@@ -1994,6 +2001,13 @@ do
 			Notif("You need to hold the tool you want to mod!")
 		end
 	end,"Mods your gun")
+	Add_Command("cuffs",function(Args)
+		local Args = GetArgs(Args)
+		local Player = FindPlayer(Args[2])
+		if Player then
+			bring(Player,Player.Character:GetPrimaryPartCFrame(),"a",true)
+		end
+	end,"Gives handcuffs to a player","PLAYER_COMMAND")
 	Add_Command("autofire",function(Args)
 		local Args = GetArgs(Args)
 		if plr.Character:FindFirstChildOfClass("Tool") then
@@ -2710,6 +2724,12 @@ do
 			end
 		end
 	end)
+	local layout = {}
+	for i,v in pairs(CommandsList:GetChildren()) do
+		if v and v:IsA("TextLabel") then
+			layout[#layout+1]=v
+		end
+	end
 	SearchBar.Changed:Connect(function(Changed)
 		if Changed:lower() == "text"  then
 			CommandsList.CanvasPosition = Vector2.new(0, 0)
@@ -2731,15 +2751,12 @@ do
 					end
 				end
 			elseif #SearchBar.Text <1 then
-				for i,v in pairs(CommandsList:GetChildren()) do
-					if v:IsA("TextLabel") then
-						if v.Name == "TEMP_CMD" then
-							v.Parent = ScreenGui
-							v.Visible = false
-						end
-					end
+				for i,v in pairs(layout) do
+					v.Parent = ScreenGui
+					v.Visible = false
 				end
-				for i,v in pairs(CommandsRawList) do
+				task.wait()
+				for i,v in pairs(layout) do
 					if v then
 						v.Parent = CommandsList
 						v.Visible = true
@@ -3233,7 +3250,7 @@ function AdminChatted(Text,Speaker)
 	local SPLITED = TXT:split(" ")
 	Arg1_P = SPLITED[1]
 	local CmdsList = "[ADMIN]: !bring player, !cmds, !criminal player, !goto player, !kill [player,all], !fling [player], !car, !loopkill [player]"
-	local CmdsList2 = "[ADMIN]: !unloopkill [player], !tase [player,all], !yard, !crimbase, !armory, !prison, !opendoors"
+	local CmdsList2 = "[ADMIN]: !unloopkill [player], !tase [player,all], !yard, !crimbase, !armory, !prison, !opendoors, !cuffs [player]"
 
 	local Arg2_P = SPLITED[2]
 	local Arg3_P = SPLITED[3]
@@ -3272,8 +3289,19 @@ function AdminChatted(Text,Speaker)
 		wait(.1)
 		MoveTo(org)
 	end
+	if commandPLAYER("cuffs") then
+		local Args = Arg2_P
+		if Args then
+			local Player = FindPlayer(Args)
+			if Player then
+				bring(Player,Player.Character:GetPrimaryPartCFrame(),"a",true)
+			end
+		else
+			bring(Speaker,Speaker.Character:GetPrimaryPartCFrame(),"a",true)
+		end
+	end
 	if commandPLAYER("kill") then
-		local r = FindPlayer(Arg2_P)
+		local Args = Arg2_P
 		local Check1 = function(ar)
 			for i,v in pairs(game:GetService("Teams"):GetChildren()) do
 				if v and v.Name:lower() == ar:lower() then
@@ -3282,15 +3310,21 @@ function AdminChatted(Text,Speaker)
 			end
 			return nil
 		end
-		if Arg2_P and Check1(Arg2_P) then
-			Kill_All(Check1(Arg2_P))
-			return
-		end
-		if r then
-			MKILL(r)
+		if Args then
+			if Args == "all" then
+				Kill_All()
+			elseif Check1(Args)  then
+				Kill_All(Check1(Args))
+			else
+				local r = FindPlayer(Args)
+				if r then
+					kill(r)
+				else
+					NotFound()
+				end
+			end
 		else
-			Msg(Speaker,"Player not found!")
-			NotFound()
+			Notif("Missing arg2 !kill player")
 		end
 	end
 	if commandPLAYER("fling") then
