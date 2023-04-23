@@ -647,23 +647,27 @@ ValidCommand=function(Name)
 	return nil
 end
 Execute_Command = function(Name,Raw)
-	task.spawn(function()
-		if unloaded then return end
-		Name = Name:lower()
-		local Saved_Name = Name
-		if not string.find(Saved_Name," ") then
-			Saved_Name = Saved_Name.." "
-		end
-		if Verify_Command(Name) then
-			for i,v in pairs(TableCommands) do
-				if v then
-					if v["Name"]:lower() == Saved_Name:split(" ")[1] then
+	local p = nil
+	if unloaded then return end
+	Name = Name:lower()
+	local Saved_Name = Name
+	if not string.find(Saved_Name," ") then
+		Saved_Name = Saved_Name.." "
+	end
+	if Verify_Command(Name) then
+		for i,v in pairs(TableCommands) do
+			if v then
+				if v["Name"]:lower() == Saved_Name:split(" ")[1] then
+					p = true
+					coroutine.wrap(function()
 						v["Callback"](Raw)
-					end
+					end)()
 				end
 			end
 		end
-	end)
+		print(p)
+		return p
+	end
 end
 FindPlayer = function(h,h2)
 	if string.lower(h) == "me" then
@@ -1150,37 +1154,6 @@ do
 		MoveTo(a)
 
 	end
-	function Crash()
-		local Bullets = {}
-		local Player = plr
-		for i = 1,10 do
-			Bullets[#Bullets+1] = {
-				["RayObject"] = Ray.new(Vector3.new(990.272583, 101.489975, 2362.74878), Vector3.new(-799.978333, 0.23157759, -5.88794518)),
-				["Distance"] = 198.9905242919922,
-				["Cframe"] = CFrame.new(894.362549, 101.288307, 2362.53491, -0.0123058055, 0.00259522465, -0.999920964, 3.63797837e-12, 0.999996722, 0.00259542116, 0.999924302, 3.19387436e-05, -0.0123057645),
-			}
-		end
-		if #game:GetService("Teams").Guards:GetPlayers() >7 then
-			GetGun("M9")
-		else
-			ChangeTeam(game.Teams.Guards)
-		end
-		repeat task.wait() until Player.Backpack:FindFirstChild("M9") or Player.Character:FindFirstChild("M9") 
-		game:GetService("ReplicatedStorage").ReloadEvent:FireServer(Player.Backpack:FindFirstChild("M9") or Player.Character:FindFirstChild("M9"))
-		while task.wait() do
-			local Gun = Player.Backpack:FindFirstChild("M9") or Player.Character:FindFirstChild("M9") 
-			if not Gun or not GetHumanoid() or GetHumanoid() and GetHumanoid().Health <1  then
-				task.wait(4)--//Ping cool down
-				break
-			end
-			coroutine.wrap(function()
-				game:GetService("ReplicatedStorage").ShootEvent:FireServer(Bullets,Gun)
-			end)()
-			coroutine.wrap(function()
-				game:GetService("ReplicatedStorage").ReloadEvent:FireServer(Gun)
-			end)()
-		end
-	end
 	function ReturnGun()
 		for i,v in pairs(plr.Backpack:GetChildren()) do
 			if v and v:IsA("Tool") and v:FindFirstChildOfClass("ModuleScript") then
@@ -1420,7 +1393,7 @@ do
 			if not Handcuffs or not Handcuffs:FindFirstChild("Handle") or not Handcuffs.Handle:FindFirstChildOfClass("SpecialMesh") then
 				return Notif("Failed to bring due to a rare error!")
 			end
-			
+
 			player.Character:FindFirstChildOfClass("Humanoid"):RemoveAccessories()
 			if Type ~= "a" then
 				Handcuffs.Handle:FindFirstChildOfClass("SpecialMesh"):Destroy()
@@ -1711,9 +1684,6 @@ do
 			until Done
 		end)
 	end,"Brings a car to your location")
-	Add_Command("crashserver",function(Args)
-		Crash()
-	end,"Attempts to shutdown the server")
 	Add_Command("re",function(Args)
 		local Args = GetArgs(Args)
 		Execute_Command("!refresh","!refresh")
@@ -2319,27 +2289,6 @@ do
 		local Args = GetArgs(Args)
 		ChangeTeam(game.Teams.Guards)
 	end,"puts you into guards team")
-	Add_Command("lag",function(Args)
-		local Args = GetArgs(Args)
-		GetGun("Remington 870")
-		wait(.7)
-		local T = {}
-		for i =1,100 do
-			T[#T+1] = unpack({
-				["RayObject"] = Ray.new(Vector3.new(780.852478, 99.4999161, 2568.36914), Vector3.new(308.161377, -90.2463608, -238.520844)),
-				["Distance"] = 15.429909706115723,
-				["Cframe"] = CFrame.new(790.130249, 97.1738739, 2562.07666, -0.683907807, 0.18761155, 0.705033362, 0, 0.966370463, -0.257154137, -0.729568481, -0.175869718, -0.660908222),
-				["Hit"] = workspace:FindFirstChildOfClass("Part")
-			})
-		end
-		local ohInstance2 = game:GetService("Players").LocalPlayer.Backpack["Remington 870"]
-
-		for i =1,30 do
-			task.spawn(function()
-				game:GetService("ReplicatedStorage").ShootEvent:FireServer(T, ohInstance2)
-			end)
-		end
-	end,"lags the server")
 	Add_Command("inmate",function(Args)
 		local Args = GetArgs(Args)
 		ChangeTeam(game.Teams.Inmates)
@@ -2715,12 +2664,19 @@ do
 			if Check_Prefix(CommandBar.Text) == "Not" then
 				local TextGot = CommandBar.Text
 				CommandBar.Text = ""
-				Execute_Command(Prefix..TextGot:lower(),Prefix..TextGot:lower())
-
+				local Executed = Execute_Command(Prefix..TextGot:lower(),Prefix..TextGot:lower())
+				print(Executed)
+				if not Executed then
+					Notif("Unknown command!")
+				end
 			else
 				local TextGot = CommandBar.Text
 				CommandBar.Text = ""
-				Execute_Command(TextGot,TextGot)
+				local Executed =Execute_Command(TextGot,TextGot)
+				print(Executed)
+				if not Executed then
+					Notif("Unknown command!")
+				end
 			end
 		end
 	end)
