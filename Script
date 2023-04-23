@@ -2479,7 +2479,7 @@ do
 			Kill_All()
 			Notif("Nuke from player has been removed.")
 		end
-	end,"If player dies everyone dies","PLYAER_COMMAND")
+	end,"If player dies everyone dies","PLAYER_COMMAND")
 	Add_Command("antibring",function(Args)
 		local Args = GetArgs(Args)
 		Toggle(Args[2],"Antibring")
