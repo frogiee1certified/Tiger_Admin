@@ -2981,20 +2981,31 @@ do
 	end)
 
 end
-plr.CharacterAdded:Connect(function(char)
+plr.CharacterAdded:Connect(function(NewChar)
 	if unloaded then return end
 	Temp.Respawned_132 = true
+	char = NewChar
 	task.spawn(function()
 		--//Antibring
 		if States.Antibring then
 			char.ChildAdded:Connect(function(a)
-				if unloaded then return end
-				if a and a:IsA("Tool") and not table.find(Whitelisted_ITEMS,a) and not a:FindFirstChild("ISWHITELISTED") and not unloaded then
+				if unloaded or not a then return end
+				if a:IsA("Tool") and not table.find(Whitelisted_ITEMS,a) and not a:FindFirstChild("ISWHITELISTED") then
 					plr.Character:FindFirstChild("HumanoidRootPart").Anchored = true
 					a:Destroy()
-					task.wait()
-					plr.Character:FindFirstChild("HumanoidRootPart").Anchored = false
-					game:GetService("Debris"):AddItem(a,0)
+					task.spawn(function()
+						repeat
+							game:GetService("RunService").Stepped:Wait()
+							a:Destroy()
+						until not a or a and a.Parent == nil
+					end)
+					task.spawn(function()
+						task.wait()
+						plr.Character:FindFirstChild("HumanoidRootPart").Anchored = false
+						pcall(function()
+							game:GetService("Debris"):AddItem(a,0)
+						end)
+					end)
 				end
 			end)
 		end
