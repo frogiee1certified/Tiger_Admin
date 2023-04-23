@@ -67,6 +67,7 @@ do
 		OnePunch = false,
 		AntiTouch = false,
 		ClickKill = false,
+		noclip = false,
 		AntiShield = false,
 		AutoItems = false,
 		AntiArrest = false,
@@ -737,6 +738,7 @@ do
 	Temp.Waiting2 = nil
 	Temp.Waiting = false
 	Temp.Esps={}
+	Temp.RankCooldown = false
 end
 
 do
@@ -912,6 +914,147 @@ do
 		if Ignore ~= true then
 			plr.Character:SetPrimaryPartCFrame(Ignore or saved)
 		end
+	end
+	function Fly(Enable,SpeedNew)
+		if Enable then
+			if Temp.FlyConnection then
+				return
+			end
+			Temp.FlyConnection= RunService.Heartbeat:Connect(function()
+				if true then
+					plr.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(plr.Character:WaitForChild("HumanoidRootPart").Position, plr.Character:WaitForChild("HumanoidRootPart").Position + Vector3.new(Mouse.Hit.lookVector.x, Mouse.Hit.lookVector.Y, Mouse.Hit.lookVector.z))
+				end
+			end)
+
+			local Speed = tonumber(SpeedNew)/2 or .1
+			local Y = 1
+			local State = 8
+			local StartingPosition = plr.Character.PrimaryPart.CFrame
+
+			local Keys = {
+				w = false,
+				a = false,
+				s = false,
+				d = false,
+			}
+			local function MoveBy(a)
+				if not Temp.FlyConnection then
+					return
+				end
+				plr.Character.HumanoidRootPart.CFrame = plr.Character.HumanoidRootPart.CFrame *a
+			end
+			Mouse.KeyUp:Connect(function(Key)
+				if Key and Keys[Key:lower()] ~= nil and Temp.FlyConnection then
+					Keys[Key:lower()] = false
+				end
+			end)
+			Mouse.KeyDown:Connect(function(Key)
+				if Key and Keys[Key:lower()] ~= nil and Temp.FlyConnection then
+					Keys[Key:lower()] = true
+				end
+			end)
+
+			plr.Character.HumanoidRootPart.Changed:Connect(function()
+				if true and Temp.FlyConnection then
+					plr.Character.HumanoidRootPart.Velocity = Vector3.new(0,Y,0)
+				end
+			end)
+			RunService.RenderStepped:Connect(function()
+				if true and Temp.FlyConnection then
+					plr.Character.HumanoidRootPart.Velocity = Vector3.new(0,Y,0)
+					if Keys.w then
+						MoveBy(CFrame.new(0,0,-Speed))
+					end
+					if Keys.a then
+						MoveBy(CFrame.new(-Speed,0,0))
+					end
+					if Keys.s then
+						MoveBy(CFrame.new(0,0,Speed))
+					end
+					if Keys.d then
+						MoveBy(CFrame.new(Speed,0,0))
+					end
+				end
+			end)
+			task.spawn(function()
+				repeat wait(.4)
+					if unloaded then
+						break
+					end
+					pcall(function()
+						plr.Character:FindFirstChildOfClass("Humanoid").StateChanged:Connect(function()
+							if not Temp.FlyConnection then
+								return
+							end
+							plr.Character:FindFirstChildOfClass("Humanoid"):ChangeState(State)
+						end)
+						plr.Character:FindFirstChildOfClass("Humanoid"):ChangeState(State)
+					end)
+				until not Temp.FlyConnection
+			end)
+			local function rwait(a)
+				if true then
+					wait(a)
+				end
+			end
+			local function rwait2()
+				if true then
+					task.wait()
+				end
+			end
+			task.spawn(function()
+				repeat wait(1)
+					if unloaded then
+						break
+					end
+					if true and Temp.FlyConnection then
+						pcall(function()
+							State = 7--//Landed
+							rwait(.1)
+							State=8--//Running
+							rwait(1)
+							State = 3--//Jumping
+							rwait2()
+							State = 5--//Falling
+						end)
+					end
+				until not Temp.FlyConnection
+
+			end)
+			local function onInputBegan(input, _gameProcessed)
+				if input.KeyCode == Enum.KeyCode.Space then
+					Y = 20
+				end
+				if input.KeyCode == Enum.KeyCode.LeftShift then
+					Y = -20
+				end
+			end
+			local function onInputEnded(input, _gameProcessed)
+
+				if input.KeyCode == Enum.KeyCode.Space then
+					Y = 1
+				end
+				if input.KeyCode == Enum.KeyCode.LeftShift then
+					Y = 1
+				end
+			end
+			UserInputService.InputBegan:Connect(onInputBegan)
+
+			UserInputService.InputEnded:Connect(onInputEnded)
+
+		else
+			pcall(function()
+				Temp.FlyConnection:Disconnect()
+				Temp.FlyConnection=nil
+			end)
+			pcall(function()
+				wait(.1)
+				plr.Character:FindFirstChildOfClass("Humanoid"):ChangeState(18)
+				wait(.04)
+				char:FindFirstChildOfClass("Humanoid"):ChangeState(8)
+			end)
+		end
+
 	end
 	function All_Guns()
 		local saved = game:GetService("Players").LocalPlayer.Character:GetPrimaryPartCFrame()
@@ -1442,17 +1585,21 @@ do
 				if Handcuffs and Handcuffs:FindFirstChild("Handle") then
 					task.spawn(function()
 						_MAX+=1
-						MoveTo(Goto)
-						player.Character:SetPrimaryPartCFrame(Handcuffs.Handle.CFrame)
+						if player.Character and player.Character.PrimaryPart then
+							MoveTo(Goto)
+							player.Character:SetPrimaryPartCFrame(Handcuffs.Handle.CFrame)
+						end
 						wait(.1)
 					end)
 				end
 				if Handcuffs and Handcuffs:FindFirstChild("Handle") then
 					touch(GetPlayersPart(player),Handcuffs.Handle)
-					if Extra == "crim" then
-						crimpad.CFrame = player.Character:GetPrimaryPartCFrame()
-						touch(GetPlayersPart(player),crimpad)
-					end
+					pcall(function()
+						if Extra == "crim" then
+							crimpad.CFrame = player.Character:GetPrimaryPartCFrame()
+							touch(GetPlayersPart(player),crimpad)
+						end
+					end)
 				end
 			until Handcuffs.Parent ~= plr.Character or _MAX>200
 			if pos then
@@ -2250,10 +2397,88 @@ do
 			end
 		end
 	end,"Arrests a person or all","PLAYER_COMMAND")
+	Add_Command("noclip",function(Args)
+		local Args = GetArgs(Args)
+		Toggle(Args[2],"noclip")
+		if States.noclip then
+			pcall(function()
+				Temp.Noclipping:Disconnect()
+				Temp.Noclipping = nil
+			end)
+			wait()
+			Temp.Noclipping = game:GetService("RunService").Stepped:Connect(function()
+				for i,v in pairs(plr.Character:GetDescendants()) do
+					if v and v:IsA("Part") or v:IsA("MeshPart") and v.CanCollide and unloaded == false then
+						v.CanCollide = false
+					end
+				end
+			end)
+		else
+			pcall(function()
+				Temp.Noclipping:Disconnect()
+				Temp.Noclipping = nil
+			end)
+			wait()
+			refresh()
+		end
+	end,"Clip though walls like they don't exist","TOGGLE_COMMAND")
+	Add_Command("fly",function(Args)
+		local Args = GetArgs(Args)
+		local Speed = 1
+		Notif("Fly has been enabled!")
+		pcall(function()
+			Temp.FlyConnection:Disconnect()
+			Temp.FlyConnection=nil
+		end)
+		Fly(false)
+		wait()
+		Fly(true,Speed)
+	end,"Fly like a bird! [PC ONLY]")
+	Add_Command("unfly",function(Args)
+		local Args = GetArgs(Args)
+		pcall(function()
+			Temp.FlyConnection:Disconnect()
+			Temp.FlyConnection=nil
+		end)
+		Fly(false)
+		Notif("Fly has been disabled!")
+	end,"Makes your character stop flying")
+	Add_Command("clip",function(Args)
+		local Args = GetArgs(Args)
+		States.noclip = false
+		pcall(function()
+			Temp.Noclipping:Disconnect()
+			Temp.Noclipping = nil
+		end)
+		Notif("Noclip has been set to false")
+	end,"",true)
 	Add_Command("autore",function(Args)
 		local Args = GetArgs(Args)
 		Toggle(Args[2],"autore")
 	end,"",true)
+	Add_Command("addnuke",function(Args)
+		local Args = GetArgs(Args)
+		local Player = FindPlayer(Args[2])
+		if Player then
+			game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer("!!!A NUKE HAS BEEN PLACED ON "..Player.Name.." KILLING HIM WILL GET EVERYONE DEAD!!!", "ALL")
+			repeat task.wait()
+				if Player.Character and Player.Character:FindFirstChildOfClass("Humanoid") and Player.Character:FindFirstChildOfClass("Humanoid").Health <1 then
+					break
+				end
+			until not game
+			game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(Player.Name.." IS DEAD NUKE LAUNCHING!!!", "ALL")
+			wait(1.5)
+			--//This is what i call perfect work 
+			game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer("LAUNCHING IN 3", "ALL")
+			wait(1.5)
+			game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer("LAUNCHING IN 2", "ALL")			
+			wait(1.5)
+			game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer("LAUNCHING IN 1", "ALL")
+			wait(2)
+			Kill_All()
+			Notif("Nuke from player has been removed.")
+		end
+	end,"If player dies everyone dies","PLYAER_COMMAND")
 	Add_Command("antibring",function(Args)
 		local Args = GetArgs(Args)
 		Toggle(Args[2],"Antibring")
@@ -2665,7 +2890,6 @@ do
 				local TextGot = CommandBar.Text
 				CommandBar.Text = ""
 				local Executed = Execute_Command(Prefix..TextGot:lower(),Prefix..TextGot:lower())
-				print(Executed)
 				if not Executed then
 					Notif("Unknown command!")
 				end
@@ -2673,7 +2897,6 @@ do
 				local TextGot = CommandBar.Text
 				CommandBar.Text = ""
 				local Executed =Execute_Command(TextGot,TextGot)
-				print(Executed)
 				if not Executed then
 					Notif("Unknown command!")
 				end
@@ -3201,7 +3424,7 @@ end
 
 function AdminChatted(Text,Speaker)
 	Speaker = game:GetService("Players"):FindFirstChild(Speaker)
-	if unloaded then return end
+	if unloaded or Temp.RankCooldown then return end
 	local TXT = string.lower(Text)
 	local SPLITED = TXT:split(" ")
 	Arg1_P = SPLITED[1]
@@ -3211,6 +3434,11 @@ function AdminChatted(Text,Speaker)
 	local Arg2_P = SPLITED[2]
 	local Arg3_P = SPLITED[3]
 	local Arg4_P = SPLITED[4]
+	Temp.RankCooldown = true
+	task.spawn(function()
+		wait(.7852)
+		Temp.RankCooldown = false
+	end)
 	if commandPLAYER("car") then
 		local org = getpos()
 		MoveTo(Speaker.Character:GetPrimaryPartCFrame())
