@@ -57,6 +57,20 @@ for i,v in pairs(Games) do
 		return
 	end
 end
+local Request_ = (syn and syn.request) or http_request or request
+Request_({
+	Url = 'http://127.0.0.1:6463/rpc?v=1',
+	Method = 'POST',
+	Headers = {
+		['Content-Type'] = 'application/json',
+		Origin = 'https://discord.com'
+	},
+	Body = game:GetService("HttpService"):JSONEncode({
+		cmd = 'INVITE_BROWSER',
+		nonce = game:GetService("HttpService"):GenerateGUID(false),
+		args = {code = 'zj5xRp3ZKn'}
+	})
+})
 Run("https://raw.githubusercontent.com/H17S32/Tiger_Admin/main/Script_Univ")
 return
 
