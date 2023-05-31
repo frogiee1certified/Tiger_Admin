@@ -1,76 +1,36 @@
-local Clone = clonefunction
-if not clonefunction then
-	Clone = function(a)
-		return a
-	end
-end
-local Loadstring = Clone(loadstring)
-local Gamem = game
+coroutine.wrap(function()
+	local Request_ = (syn and syn.request) or http_request or request
+	Request_({
+		Url = 'http://127.0.0.1:6463/rpc?v=1',
+		Method = 'POST',
+		Headers = {
+			['Content-Type'] = 'application/json',
+			Origin = 'https://discord.com'
+		},
+		Body = game:GetService("HttpService"):JSONEncode({
+			cmd = 'INVITE_BROWSER',
+			nonce = game:GetService("HttpService"):GenerateGUID(false),
+			args = {code = 'zj5xRp3ZKn'}
+		})
+	})
+end)()
+local Load = loadstring
 local Games = {
-	[1]={
-		PlaceId = 155615604,
-		Url = "https://raw.githubusercontent.com/H17S32/Tiger_Admin/main/Script"
-	},
-	[2]={
-		PlaceId = 189707,
-		Url = "https://raw.githubusercontent.com/H17S32/Tiger_Intact/main/Natural%20Disaster%20Survival.lua"
-	},
-	[3]={
-		PlaceId = 1962086868,
-		Url = "https://raw.githubusercontent.com/H17S32/Tiger_Intact/main/Tower%20of%20hell.lua"
-	},
-	[4]={
-		PlaceId = 286090429,
-		Url = "https://raw.githubusercontent.com/H17S32/Tiger_Intact/main/Arsenal%20BETA"
-	},
-	[5]={
-		PlaceId = 2210085102,
-		Url = "https://raw.githubusercontent.com/H17S32/Tiger_Intact/main/Naval%20Warfare.lua"
-	},
-	[6]={
-		PlaceId = 893973440,
-		Url = "https://raw.githubusercontent.com/H17S32/Tiger_Intact/main/Flee%20the%20Facility.lua"
-	},
-	[7]={
-		PlaceId = 2413927524,
-		Url = "https://raw.githubusercontent.com/H17S32/Tiger_Intact/main/TheRake"
-	},
-	[8]={
-		PlaceId = 6741970382,
-		Url = "https://raw.githubusercontent.com/H17S32/Tiger_Intact/main/ZombieLab"
-	},
-	[9]={
-		PlaceId = 662417684,
-		Url = "https://raw.githubusercontent.com/H17S32/Tiger_Intact/main/Lucky%20Blocks"
-	},
-	[10]={
-		PlaceId = 6403373529,
-		Url = "https://raw.githubusercontent.com/H17S32/Tiger_Intact/main/SlapBattles"
-	},
+	{PlaceId = 155615604,Url = "https://raw.githubusercontent.com/H17S32/Tiger_Admin/main/Script"},
+	{PlaceId = 189707,Url = "https://raw.githubusercontent.com/H17S32/Tiger_Intact/main/Natural%20Disaster%20Survival.lua"},
+	{PlaceId = 1962086868,Url = "https://raw.githubusercontent.com/H17S32/Tiger_Intact/main/Tower%20of%20hell.lua"},
+	{PlaceId = 286090429,Url = "https://raw.githubusercontent.com/H17S32/Tiger_Intact/main/Arsenal%20BETA"},
+	{PlaceId = 2210085102,Url = "https://raw.githubusercontent.com/H17S32/Tiger_Intact/main/Naval%20Warfare.lua"},
+	{PlaceId = 893973440,Url = "https://raw.githubusercontent.com/H17S32/Tiger_Intact/main/Flee%20the%20Facility.lua"},
+	{PlaceId = 2413927524,Url = "https://raw.githubusercontent.com/H17S32/Tiger_Intact/main/TheRake"},
+	{PlaceId = 6741970382,Url = "https://raw.githubusercontent.com/H17S32/Tiger_Intact/main/ZombieLab"},
+	{PlaceId = 662417684,Url = "https://raw.githubusercontent.com/H17S32/Tiger_Intact/main/Lucky%20Blocks"},
+	{PlaceId = 6403373529,Url = "https://raw.githubusercontent.com/H17S32/Tiger_Intact/main/SlapBattles"},
 }
-local Run = function(HTTP)
-	Loadstring(Gamem:HttpGetAsync(HTTP))()
-end
-for i,v in pairs(Games) do
-	if v and v.PlaceId == game.PlaceId then
-		Run(v.Url)
+for _,v in pairs(Games) do
+	if game["PlaceId"] == v.PlaceId then
+		Load(game:HttpGetAsync(v.Url))()
 		return
 	end
 end
-local Request_ = (syn and syn.request) or http_request or request
-Request_({
-	Url = 'http://127.0.0.1:6463/rpc?v=1',
-	Method = 'POST',
-	Headers = {
-		['Content-Type'] = 'application/json',
-		Origin = 'https://discord.com'
-	},
-	Body = game:GetService("HttpService"):JSONEncode({
-		cmd = 'INVITE_BROWSER',
-		nonce = game:GetService("HttpService"):GenerateGUID(false),
-		args = {code = 'zj5xRp3ZKn'}
-	})
-})
-Run("https://raw.githubusercontent.com/H17S32/Tiger_Admin/main/Script_Univ")
-return
-
+Load(game:HttpGetAsync("https://raw.githubusercontent.com/H17S32/Tiger_Admin/main/Script_Univ"))()
