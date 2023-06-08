@@ -1,3 +1,3 @@
 # **Tiger_Admin**
-# A powerfull script for a game under the game of "prison life"
+# A powerfull script for **Roblox.**
 #Join discord for more information https://discord.gg/zj5xRp3ZKn
