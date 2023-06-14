@@ -26,6 +26,7 @@ local Games = {
 	{PlaceId = 6741970382,Url = "https://raw.githubusercontent.com/H17S32/Tiger_Intact/main/ZombieLab"},
 	{PlaceId = 662417684,Url = "https://raw.githubusercontent.com/H17S32/Tiger_Intact/main/Lucky%20Blocks"},
 	{PlaceId = 6403373529,Url = "https://raw.githubusercontent.com/H17S32/Tiger_Intact/main/SlapBattles"},
+	{PlaceId = 537413528,Url = "https://raw.githubusercontent.com/H17S32/Tiger_Intact/main/BuildABoat.lua"},
 }
 for _,v in pairs(Games) do
 	if game["PlaceId"] == v.PlaceId then
