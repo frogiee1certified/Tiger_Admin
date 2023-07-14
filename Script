@@ -900,7 +900,7 @@ do
 	--//pretend this doesnt exist okay?
 	FLYING = false
 	QEfly = true
-	iyflyspeed = 1
+	flyspeed = 1
 	vehicleflyspeed = 1
 	function sFLY(vfly)
 		repeat wait() until game:GetService("Players").LocalPlayer and game:GetService("Players").LocalPlayer.Character and game:GetService("Players").LocalPlayer.Character:WaitForChild("HumanoidRootPart") and game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
@@ -955,17 +955,17 @@ do
 		end
 		flyKeyDown = game:GetService("Players").LocalPlayer:GetMouse().KeyDown:Connect(function(KEY)
 			if KEY:lower() == 'w' then
-				CONTROL.F = (vfly and vehicleflyspeed or iyflyspeed)
+				CONTROL.F = (vfly and vehicleflyspeed or flyspeed)
 			elseif KEY:lower() == 's' then
-				CONTROL.B = - (vfly and vehicleflyspeed or iyflyspeed)
+				CONTROL.B = - (vfly and vehicleflyspeed or flyspeed)
 			elseif KEY:lower() == 'a' then
-				CONTROL.L = - (vfly and vehicleflyspeed or iyflyspeed)
+				CONTROL.L = - (vfly and vehicleflyspeed or flyspeed)
 			elseif KEY:lower() == 'd' then 
-				CONTROL.R = (vfly and vehicleflyspeed or iyflyspeed)
+				CONTROL.R = (vfly and vehicleflyspeed or flyspeed)
 			elseif QEfly and KEY:lower() == 'e' then
-				CONTROL.Q = (vfly and vehicleflyspeed or iyflyspeed)*2
+				CONTROL.Q = (vfly and vehicleflyspeed or flyspeed)*2
 			elseif QEfly and KEY:lower() == 'q' then
-				CONTROL.E = -(vfly and vehicleflyspeed or iyflyspeed)*2
+				CONTROL.E = -(vfly and vehicleflyspeed or flyspeed)*2
 			end
 			pcall(function() workspace.CurrentCamera.CameraType = Enum.CameraType.Track end)
 		end)
@@ -1607,7 +1607,7 @@ do
 			end
 		end
 	end
-	
+
 end
 
 do
@@ -2343,9 +2343,20 @@ do
 	Add_Command("carfly",function(Args)
 		local Args = GetArgs(Args)
 		local Speed = 1
+		if Args[2] then
+			flyspeed = tonumber(Args[2]) or 1
+			vehicleflyspeed = tonumber(Args[2]) or 1
+		end
 		NOFLY()
 		sFLY(true)
-	end,"Fly like a bird! but in a car [PC ONLY]")
+		
+	end,"Fly like a bird! but in a car [PC ONLY]"," [SPEED]")
+	Add_Command("uncarfly",function(Args)
+		local Args = GetArgs(Args)
+		local Speed = 1
+		NOFLY()
+		sFLY(true)
+	end,"stops carfly you can also use !unfly")
 	Add_Command("fly",function(Args)
 		local Args = GetArgs(Args)
 		local Speed = 1
@@ -2357,7 +2368,7 @@ do
 		Fly(false)
 		wait()
 		Fly(true,Speed)
-	end,"Fly like a bird! [PC ONLY]")
+	end,"Fly like a bird! [PC ONLY]"," [SPEED]")
 	Add_Command("unfly",function(Args)
 		local Args = GetArgs(Args)
 		pcall(function()
@@ -2365,6 +2376,7 @@ do
 			Temp.FlyConnection=nil
 		end)
 		Fly(false)
+		NOFLY()
 		Notif("Fly has been disabled!")
 	end,"Makes your character stop flying")
 	Add_Command("clip",function(Args)
@@ -2547,7 +2559,7 @@ do
 		local Args = GetArgs(Args)
 		local Pos = CFrame.new(918.77, 100, 2379.07)
 		if Args[2] then
-			
+
 		else
 			MoveTo(Pos)
 		end
@@ -2556,7 +2568,7 @@ do
 		local Args = GetArgs(Args)
 		local Pos = CFrame.new(918.77, 100, 2379.07)
 		if Args[2] then
-			
+
 		else
 			MoveTo(Pos)
 		end
@@ -2565,7 +2577,7 @@ do
 		local Args = GetArgs(Args)
 		local Pos = CFrame.new(791, 98, 2498)
 		if Args[2] then
-			
+
 		else
 			MoveTo(Pos)
 		end
@@ -2574,7 +2586,7 @@ do
 		local Args = GetArgs(Args)
 		local Pos = CFrame.new(-858.08990478516, 94.476051330566, 2093.8288574219)
 		if Args[2] then
-			
+
 		else
 			MoveTo(Pos)
 		end
@@ -2583,7 +2595,7 @@ do
 		local Args = GetArgs(Args)
 		local Pos = CFrame.new(-858.08990478516, 94.476051330566, 2093.8288574219)
 		if Args[2] then
-			
+
 		else
 			MoveTo(Pos)
 		end
@@ -2591,7 +2603,7 @@ do
 	Add_Command("gatetower2",function(Args)  
 		local Args = GetArgs(Args);local Pos  = CFrame.new(505, 125, 2149)
 		if Args[2] then
-			
+
 		else
 			MoveTo(Pos)
 		end
@@ -2599,7 +2611,7 @@ do
 	Add_Command("bridge",function(Args)  
 		local Args = GetArgs(Args);local Pos  = CFrame.new(54, 33, 1311)
 		if Args[2] then
-			
+
 		else
 			MoveTo(Pos)
 		end
@@ -2607,7 +2619,7 @@ do
 	Add_Command("topnex",function(Args)  
 		local Args = GetArgs(Args);local Pos  = CFrame.new(829, 119, 2332)
 		if Args[2] then
-			
+
 		else
 			MoveTo(Pos)
 		end
@@ -2615,7 +2627,7 @@ do
 	Add_Command("range",function(Args)  
 		local Args = GetArgs(Args);local Pos  = CFrame.new(403, 11, 1173)
 		if Args[2] then
-			
+
 		else
 			MoveTo(Pos)
 		end
@@ -2623,7 +2635,7 @@ do
 	Add_Command("gas",function(Args)  
 		local Args = GetArgs(Args);local Pos  = CFrame.new(-518, 54, 1655)
 		if Args[2] then
-		
+
 		else
 			MoveTo(Pos)
 		end
@@ -2631,7 +2643,7 @@ do
 	Add_Command("backcafe",function(Args) 
 		local Args = GetArgs(Args);local Pos  = CFrame.new(918, 100, 2223)
 		if Args[2] then
-			
+
 		else
 			MoveTo(Pos)
 		end
@@ -2639,7 +2651,7 @@ do
 	Add_Command("gate",function(Args) 
 		local Args = GetArgs(Args);local Pos  = CFrame.new(506, 118, 2251)
 		if Args[2] then
-		
+
 		else
 			MoveTo(Pos)
 		end
@@ -2647,7 +2659,7 @@ do
 	Add_Command("gatetower",function(Args) 
 		local Args = GetArgs(Args);local Pos  = CFrame.new(502, 126, 2306)
 		if Args[2] then
-		
+
 		else
 			MoveTo(Pos)
 		end
@@ -2655,7 +2667,7 @@ do
 	Add_Command("cafe",function(Args) 
 		local Args = GetArgs(Args);local Pos  = CFrame.new(877, 100, 2256)
 		if Args[2] then
-			
+
 		else
 			MoveTo(Pos)
 		end
@@ -2663,7 +2675,7 @@ do
 	Add_Command("lunchroom",function(Args) 
 		local Args = GetArgs(Args);local Pos  = CFrame.new(905, 100, 2226)
 		if Args[2] then
-			
+
 		else
 			MoveTo(Pos)
 		end
@@ -2671,7 +2683,7 @@ do
 	Add_Command("armory",function(Args) 
 		local Args = GetArgs(Args);local Pos  = CFrame.new(789, 100, 2260)
 		if Args[2] then
-			
+
 		else
 			MoveTo(Pos)
 		end
@@ -2679,7 +2691,7 @@ do
 	Add_Command("tower",function(Args) 
 		local Args = GetArgs(Args);local Pos  = CFrame.new(822, 131, 2588)
 		if Args[2] then
-			
+
 		else
 			MoveTo(Pos)
 		end
@@ -2687,7 +2699,7 @@ do
 	Add_Command("sewers",function(Args) 
 		local Args = GetArgs(Args);local Pos  = CFrame.new(916, 79, 2311)
 		if Args[2] then
-			
+
 		else
 			MoveTo(Pos)
 		end
