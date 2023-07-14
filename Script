@@ -897,6 +897,104 @@ do
 		end
 		return true
 	end
+	--//pretend this doesnt exist okay?
+	FLYING = false
+	QEfly = true
+	iyflyspeed = 1
+	vehicleflyspeed = 1
+	function sFLY(vfly)
+		repeat wait() until game:GetService("Players").LocalPlayer and game:GetService("Players").LocalPlayer.Character and game:GetService("Players").LocalPlayer.Character:WaitForChild("HumanoidRootPart") and game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+		repeat wait() until game:GetService("Players").LocalPlayer:GetMouse()
+		if flyKeyDown or flyKeyUp then flyKeyDown:Disconnect() flyKeyUp:Disconnect() end
+
+		local T = game:GetService("Players").LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+		local CONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
+		local lCONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
+		local SPEED = 0
+
+		local function FLY()
+			FLYING = true
+			local BG = Instance.new('BodyGyro')
+			local BV = Instance.new('BodyVelocity')
+			BG.P = 9e4
+			BG.Parent = T
+			BV.Parent = T
+			BG.maxTorque = Vector3.new(9e9, 9e9, 9e9)
+			BG.cframe = T.CFrame
+			BV.velocity = Vector3.new(0, 0, 0)
+			BV.maxForce = Vector3.new(9e9, 9e9, 9e9)
+			task.spawn(function()
+				repeat wait()
+					if not vfly and game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass('Humanoid') then
+						game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass('Humanoid').PlatformStand = true
+					end
+					if CONTROL.L + CONTROL.R ~= 0 or CONTROL.F + CONTROL.B ~= 0 or CONTROL.Q + CONTROL.E ~= 0 then
+						SPEED = 50
+					elseif not (CONTROL.L + CONTROL.R ~= 0 or CONTROL.F + CONTROL.B ~= 0 or CONTROL.Q + CONTROL.E ~= 0) and SPEED ~= 0 then
+						SPEED = 0
+					end
+					if (CONTROL.L + CONTROL.R) ~= 0 or (CONTROL.F + CONTROL.B) ~= 0 or (CONTROL.Q + CONTROL.E) ~= 0 then
+						BV.velocity = ((workspace.CurrentCamera.CoordinateFrame.lookVector * (CONTROL.F + CONTROL.B)) + ((workspace.CurrentCamera.CoordinateFrame * CFrame.new(CONTROL.L + CONTROL.R, (CONTROL.F + CONTROL.B + CONTROL.Q + CONTROL.E) * 0.2, 0).p) - workspace.CurrentCamera.CoordinateFrame.p)) * SPEED
+						lCONTROL = {F = CONTROL.F, B = CONTROL.B, L = CONTROL.L, R = CONTROL.R}
+					elseif (CONTROL.L + CONTROL.R) == 0 and (CONTROL.F + CONTROL.B) == 0 and (CONTROL.Q + CONTROL.E) == 0 and SPEED ~= 0 then
+						BV.velocity = ((workspace.CurrentCamera.CoordinateFrame.lookVector * (lCONTROL.F + lCONTROL.B)) + ((workspace.CurrentCamera.CoordinateFrame * CFrame.new(lCONTROL.L + lCONTROL.R, (lCONTROL.F + lCONTROL.B + CONTROL.Q + CONTROL.E) * 0.2, 0).p) - workspace.CurrentCamera.CoordinateFrame.p)) * SPEED
+					else
+						BV.velocity = Vector3.new(0, 0, 0)
+					end
+					BG.cframe = workspace.CurrentCamera.CoordinateFrame
+				until not FLYING
+				CONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
+				lCONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
+				SPEED = 0
+				BG:Destroy()
+				BV:Destroy()
+				if game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass('Humanoid') then
+					game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass('Humanoid').PlatformStand = false
+				end
+			end)
+		end
+		flyKeyDown = game:GetService("Players").LocalPlayer:GetMouse().KeyDown:Connect(function(KEY)
+			if KEY:lower() == 'w' then
+				CONTROL.F = (vfly and vehicleflyspeed or iyflyspeed)
+			elseif KEY:lower() == 's' then
+				CONTROL.B = - (vfly and vehicleflyspeed or iyflyspeed)
+			elseif KEY:lower() == 'a' then
+				CONTROL.L = - (vfly and vehicleflyspeed or iyflyspeed)
+			elseif KEY:lower() == 'd' then 
+				CONTROL.R = (vfly and vehicleflyspeed or iyflyspeed)
+			elseif QEfly and KEY:lower() == 'e' then
+				CONTROL.Q = (vfly and vehicleflyspeed or iyflyspeed)*2
+			elseif QEfly and KEY:lower() == 'q' then
+				CONTROL.E = -(vfly and vehicleflyspeed or iyflyspeed)*2
+			end
+			pcall(function() workspace.CurrentCamera.CameraType = Enum.CameraType.Track end)
+		end)
+		flyKeyUp = game:GetService("Players").LocalPlayer:GetMouse().KeyUp:Connect(function(KEY)
+			if KEY:lower() == 'w' then
+				CONTROL.F = 0
+			elseif KEY:lower() == 's' then
+				CONTROL.B = 0
+			elseif KEY:lower() == 'a' then
+				CONTROL.L = 0
+			elseif KEY:lower() == 'd' then
+				CONTROL.R = 0
+			elseif KEY:lower() == 'e' then
+				CONTROL.Q = 0
+			elseif KEY:lower() == 'q' then
+				CONTROL.E = 0
+			end
+		end)
+		FLY()
+	end
+
+	function NOFLY()
+		FLYING = false
+		if flyKeyDown or flyKeyUp then flyKeyDown:Disconnect() flyKeyUp:Disconnect() end
+		if game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass('Humanoid') then
+			game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass('Humanoid').PlatformStand = false
+		end
+		pcall(function() workspace.CurrentCamera.CameraType = Enum.CameraType.Custom end)
+	end
 	function GetGun(Item,Ignore)
 		local saved = game:GetService("Players").LocalPlayer.Character:GetPrimaryPartCFrame()
 		if workspace.Prison_ITEMS.giver:FindFirstChild(Item) and workspace.Prison_ITEMS.giver:FindFirstChild(Item):FindFirstChild("ITEMPICKUP") then
@@ -1509,132 +1607,7 @@ do
 			end
 		end
 	end
-	function bring(player,pos,Type,Extra)
-		if player and player ~= plr and player ~= plr.Name then
-			local lastteam = plr.TeamColor.Name
-			if plr.Team ~= game.Teams.Guards then
-				local ohString1 = "Bright blue"
-				workspace.Remote.TeamEvent:FireServer(ohString1)
-			end
-			task.spawn(function()
-				wait(.1)
-				if plr.Team ~= game.Teams.Guards then
-					Notif("Guards team full or server laggy.")
-					return
-				end
-			end)
-			wait()
-			local Done = false
-			local _MAX = 0
-			local Last = getpos()
-			local Handcuffs = plr.Backpack:FindFirstChild("Handcuffs")
-			local hrp = plr.Character:WaitForChild("HumanoidRootPart")
-			if not pos then
-				pos = getpos()
-			end
-			local Goto = pos
-			repeat task.wait() Handcuffs = plr.Backpack:FindFirstChild("Handcuffs")  until Handcuffs and Handcuffs:FindFirstChild("Handle")
-			if not Handcuffs or not Handcuffs:FindFirstChild("Handle") or not Handcuffs.Handle:FindFirstChildOfClass("SpecialMesh") then
-				return Notif("Failed to bring due to a rare error!")
-			end
-
-			player.Character:FindFirstChildOfClass("Humanoid"):RemoveAccessories()
-			if Type ~= "a" then
-				Handcuffs.Handle:FindFirstChildOfClass("SpecialMesh"):Destroy()
-			end
-			wait(.1)
-			if pos then
-				MoveTo(pos)
-				wait()
-			end
-			IsBringing = true
-			wait(.1)
-			local Hats = {}
-			do
-				--//Fix the stupid hat falling off because it looks good without it falling and because im not gay
-				for i,v in pairs(plr.Character:GetChildren()) do
-					if v and v:IsA("Accessory") then
-						pcall(function()
-							v.Handle.CanTouch = false
-							Hats[#Hats+1] = {
-								Hat = v,
-								OldPosition = v.Handle:FindFirstChildOfClass("Weld").C0,
-								OldPosition2 = v.Handle:FindFirstChildOfClass("Weld").C1
-							}
-							v.Handle.Anchored = true
-						end)
-
-					end
-				end
-			end
-			do--//Glitch Humanoid
-				task.spawn(function()
-					plr.Character:FindFirstChildOfClass("Humanoid"):Destroy()
-					Instance.new("Humanoid",plr.Character)
-				end)
-			end
-			FixHats(Hats)
-			repeat task.wait()
-				pcall(function()
-					plr.Character:FindFirstChildOfClass("Humanoid"):EquipTool(Handcuffs)
-				end)
-			until Handcuffs.Parent == plr.Character
-			local crimpad = workspace["Criminals Spawn"].SpawnLocation
-			crimpad.CanCollide = false
-			crimpad.Transparency = 1
-			repeat game:GetService("RunService").RenderStepped:Wait()
-				if Handcuffs and Handcuffs:FindFirstChild("Handle") then
-					task.spawn(function()
-						_MAX+=1
-						if player.Character and player.Character.PrimaryPart then
-							MoveTo(Goto)
-							player.Character:SetPrimaryPartCFrame(Handcuffs.Handle.CFrame)
-						end
-						wait(.1)
-					end)
-				end
-				if Handcuffs and Handcuffs:FindFirstChild("Handle") then
-					touch(GetPlayersPart(player),Handcuffs.Handle)
-					pcall(function()
-						if Extra == "crim" then
-							crimpad.CFrame = player.Character:GetPrimaryPartCFrame()
-							touch(GetPlayersPart(player),crimpad)
-						end
-					end)
-				end
-			until Handcuffs.Parent ~= plr.Character or _MAX>200
-			if pos then
-				wait(.2)
-				MoveToJunk(crimpad)
-			end
-			if Extra =="fling" then
-				local b = Instance.new("BodyThrust",plr.Character.HumanoidRootPart)
-				b.Force = Vector3.new(99999,10000,999999)
-				b.Location = plr.Character.HumanoidRootPart.Position
-				wait(.2)
-			end
-			game:GetService("Players").LocalPlayer.Character:MoveTo(player.Character.Head.Position)
-			MoveTo(Last)--//stupid fix for it killing
-			Last_Team(lastteam)
-			plr.CharacterAdded:Wait():WaitForChild("HumanoidRootPart").CFrame = Last
-			Done = true
-			task.spawn(function()
-				wait(.4)
-				if player.Character:FindFirstChild("HumanoidRootPart") and (player.Character:FindFirstChild("HumanoidRootPart").Position-Goto.Position).Magnitude >6 then
-					if Extra and Extra == true and Extra ~="crim" or Extra == "fling" then
-					else
-						IsBringing = false
-						return bring(player,Goto,Type,true)
-					end
-				end
-			end)
-			if pos then
-				wait(.1)
-			end
-			IsBringing = false
-			return
-		end
-	end
+	
 end
 
 do
@@ -1777,15 +1750,6 @@ do
 			tase(r)
 		end
 	end,"tases a player","PLAYER_COMMAND")
-	Add_Command("fling",function(Args)
-		local Args = GetArgs(Args)
-		local r = FindPlayer(Args[2])
-		if r then
-			bring(r,nil,nil,"fling")
-		else
-			NotFound()
-		end
-	end,"flings a player","PLAYER_COMMAND")
 	Add_Command("ak",function(Args)
 		local Args = GetArgs(Args)
 		GetGun("AK-47")
@@ -2119,13 +2083,6 @@ do
 			Notif("You need to hold the tool you want to mod!")
 		end
 	end,"Mods your gun")
-	Add_Command("cuffs",function(Args)
-		local Args = GetArgs(Args)
-		local Player = FindPlayer(Args[2])
-		if Player then
-			bring(Player,Player.Character:GetPrimaryPartCFrame(),"a",true)
-		end
-	end,"Gives handcuffs to a player","PLAYER_COMMAND")
 	Add_Command("autofire",function(Args)
 		local Args = GetArgs(Args)
 		if plr.Character:FindFirstChildOfClass("Tool") then
@@ -2184,46 +2141,6 @@ do
 			NotFound()
 		end
 	end,"Admins a player","PLAYER_COMMAND")
-	Add_Command("bring",function(Args)
-		local Args = GetArgs(Args)
-		if Args[2] == "all" then
-			local pos = getpos()
-			for i,v in pairs(game:GetService("Players"):GetPlayers()) do
-				if v and v~= plr then
-					bring(v,pos)
-				end
-			end
-			wait()
-			MoveTo(pos)
-		else
-			local r = FindPlayer(Args[2])
-			if r then
-				bring(r)
-			else
-				NotFound()
-			end
-		end
-	end,"Brings a player to you","PLAYER_COMMAND")
-	Add_Command("void",function(Args)
-		local Args = GetArgs(Args)
-		if Args[2] == "all" then
-			local pos = getpos()
-			for i,v in pairs(game:GetService("Players"):GetPlayers()) do
-				if v and v~= plr then
-					bring(v,CFrame.new(9999999999999,9999999999999999,999999999999999))
-				end
-			end
-			wait()
-			MoveTo(pos)
-		else
-			local r = FindPlayer(Args[2])
-			if r then
-				bring(r,CFrame.new(9999999999999,9999999999999999,999999999999999))
-			else
-				NotFound()
-			end
-		end
-	end,"Brings a player to the void","PLAYER_COMMAND")
 	Add_Command("jump",function(Args)
 		local Args = GetArgs(Args)
 		local r = Args[2]
@@ -2423,6 +2340,12 @@ do
 			refresh()
 		end
 	end,"Clip though walls like they don't exist","TOGGLE_COMMAND")
+	Add_Command("carfly",function(Args)
+		local Args = GetArgs(Args)
+		local Speed = 1
+		NOFLY()
+		sFLY(true)
+	end,"Fly like a bird! but in a car [PC ONLY]")
 	Add_Command("fly",function(Args)
 		local Args = GetArgs(Args)
 		local Speed = 1
@@ -2528,12 +2451,6 @@ do
 	Add_Command("criminal",function(Args)
 		local Args = GetArgs(Args)
 		if Args[2] then
-			local r = FindPlayer(Args[2])
-			if r then
-				bring(r,nil,nil,"crim")
-			else
-				NotFound()
-			end
 		else
 			local pos = getpos()
 			local crimpad = workspace["Criminals Spawn"].SpawnLocation
@@ -2630,12 +2547,7 @@ do
 		local Args = GetArgs(Args)
 		local Pos = CFrame.new(918.77, 100, 2379.07)
 		if Args[2] then
-			local r = FindPlayer(Args[2])
-			if r then
-				bring(r,Pos)
-			else
-				NotFound()
-			end
+			
 		else
 			MoveTo(Pos)
 		end
@@ -2644,12 +2556,7 @@ do
 		local Args = GetArgs(Args)
 		local Pos = CFrame.new(918.77, 100, 2379.07)
 		if Args[2] then
-			local r = FindPlayer(Args[2])
-			if r then
-				bring(r,Pos)
-			else
-				NotFound()
-			end
+			
 		else
 			MoveTo(Pos)
 		end
@@ -2658,12 +2565,7 @@ do
 		local Args = GetArgs(Args)
 		local Pos = CFrame.new(791, 98, 2498)
 		if Args[2] then
-			local r = FindPlayer(Args[2])
-			if r then
-				bring(r,Pos)
-			else
-				NotFound()
-			end
+			
 		else
 			MoveTo(Pos)
 		end
@@ -2672,12 +2574,7 @@ do
 		local Args = GetArgs(Args)
 		local Pos = CFrame.new(-858.08990478516, 94.476051330566, 2093.8288574219)
 		if Args[2] then
-			local r = FindPlayer(Args[2])
-			if r then
-				bring(r,Pos)
-			else
-				NotFound()
-			end
+			
 		else
 			MoveTo(Pos)
 		end
@@ -2686,12 +2583,7 @@ do
 		local Args = GetArgs(Args)
 		local Pos = CFrame.new(-858.08990478516, 94.476051330566, 2093.8288574219)
 		if Args[2] then
-			local r = FindPlayer(Args[2])
-			if r then
-				bring(r,Pos)
-			else
-				NotFound()
-			end
+			
 		else
 			MoveTo(Pos)
 		end
@@ -2699,12 +2591,7 @@ do
 	Add_Command("gatetower2",function(Args)  
 		local Args = GetArgs(Args);local Pos  = CFrame.new(505, 125, 2149)
 		if Args[2] then
-			local r = FindPlayer(Args[2])
-			if r then
-				bring(r,Pos)
-			else
-				NotFound()
-			end
+			
 		else
 			MoveTo(Pos)
 		end
@@ -2712,12 +2599,7 @@ do
 	Add_Command("bridge",function(Args)  
 		local Args = GetArgs(Args);local Pos  = CFrame.new(54, 33, 1311)
 		if Args[2] then
-			local r = FindPlayer(Args[2])
-			if r then
-				bring(r,Pos)
-			else
-				NotFound()
-			end
+			
 		else
 			MoveTo(Pos)
 		end
@@ -2725,12 +2607,7 @@ do
 	Add_Command("topnex",function(Args)  
 		local Args = GetArgs(Args);local Pos  = CFrame.new(829, 119, 2332)
 		if Args[2] then
-			local r = FindPlayer(Args[2])
-			if r then
-				bring(r,Pos)
-			else
-				NotFound()
-			end
+			
 		else
 			MoveTo(Pos)
 		end
@@ -2738,12 +2615,7 @@ do
 	Add_Command("range",function(Args)  
 		local Args = GetArgs(Args);local Pos  = CFrame.new(403, 11, 1173)
 		if Args[2] then
-			local r = FindPlayer(Args[2])
-			if r then
-				bring(r,Pos)
-			else
-				NotFound()
-			end
+			
 		else
 			MoveTo(Pos)
 		end
@@ -2751,12 +2623,7 @@ do
 	Add_Command("gas",function(Args)  
 		local Args = GetArgs(Args);local Pos  = CFrame.new(-518, 54, 1655)
 		if Args[2] then
-			local r = FindPlayer(Args[2])
-			if r then
-				bring(r,Pos)
-			else
-				NotFound()
-			end
+		
 		else
 			MoveTo(Pos)
 		end
@@ -2764,12 +2631,7 @@ do
 	Add_Command("backcafe",function(Args) 
 		local Args = GetArgs(Args);local Pos  = CFrame.new(918, 100, 2223)
 		if Args[2] then
-			local r = FindPlayer(Args[2])
-			if r then
-				bring(r,Pos)
-			else
-				NotFound()
-			end
+			
 		else
 			MoveTo(Pos)
 		end
@@ -2777,12 +2639,7 @@ do
 	Add_Command("gate",function(Args) 
 		local Args = GetArgs(Args);local Pos  = CFrame.new(506, 118, 2251)
 		if Args[2] then
-			local r = FindPlayer(Args[2])
-			if r then
-				bring(r,Pos)
-			else
-				NotFound()
-			end
+		
 		else
 			MoveTo(Pos)
 		end
@@ -2790,12 +2647,7 @@ do
 	Add_Command("gatetower",function(Args) 
 		local Args = GetArgs(Args);local Pos  = CFrame.new(502, 126, 2306)
 		if Args[2] then
-			local r = FindPlayer(Args[2])
-			if r then
-				bring(r,Pos)
-			else
-				NotFound()
-			end
+		
 		else
 			MoveTo(Pos)
 		end
@@ -2803,12 +2655,7 @@ do
 	Add_Command("cafe",function(Args) 
 		local Args = GetArgs(Args);local Pos  = CFrame.new(877, 100, 2256)
 		if Args[2] then
-			local r = FindPlayer(Args[2])
-			if r then
-				bring(r,Pos)
-			else
-				NotFound()
-			end
+			
 		else
 			MoveTo(Pos)
 		end
@@ -2816,12 +2663,7 @@ do
 	Add_Command("lunchroom",function(Args) 
 		local Args = GetArgs(Args);local Pos  = CFrame.new(905, 100, 2226)
 		if Args[2] then
-			local r = FindPlayer(Args[2])
-			if r then
-				bring(r,Pos)
-			else
-				NotFound()
-			end
+			
 		else
 			MoveTo(Pos)
 		end
@@ -2829,12 +2671,7 @@ do
 	Add_Command("armory",function(Args) 
 		local Args = GetArgs(Args);local Pos  = CFrame.new(789, 100, 2260)
 		if Args[2] then
-			local r = FindPlayer(Args[2])
-			if r then
-				bring(r,Pos)
-			else
-				NotFound()
-			end
+			
 		else
 			MoveTo(Pos)
 		end
@@ -2842,12 +2679,7 @@ do
 	Add_Command("tower",function(Args) 
 		local Args = GetArgs(Args);local Pos  = CFrame.new(822, 131, 2588)
 		if Args[2] then
-			local r = FindPlayer(Args[2])
-			if r then
-				bring(r,Pos)
-			else
-				NotFound()
-			end
+			
 		else
 			MoveTo(Pos)
 		end
@@ -2855,12 +2687,7 @@ do
 	Add_Command("sewers",function(Args) 
 		local Args = GetArgs(Args);local Pos  = CFrame.new(916, 79, 2311)
 		if Args[2] then
-			local r = FindPlayer(Args[2])
-			if r then
-				bring(r,Pos)
-			else
-				NotFound()
-			end
+			
 		else
 			MoveTo(Pos)
 		end
@@ -3440,8 +3267,8 @@ function AdminChatted(Text,Speaker)
 	local TXT = string.lower(Text)
 	local SPLITED = TXT:split(" ")
 	Arg1_P = SPLITED[1]
-	local CmdsList = "[ADMIN]: !bring player, !cmds, !criminal player, !goto player, !kill [player,all], !fling [player], !car, !loopkill [player]"
-	local CmdsList2 = "[ADMIN]: !unloopkill [player], !tase [player,all], !yard, !crimbase, !armory, !prison, !opendoors, !cuffs [player]"
+	local CmdsList = "[ADMIN]: !cmds, !kill [player,all], !car, !loopkill [player]"
+	local CmdsList2 = "[ADMIN]: !unloopkill [player], !tase [player,all], !opendoors, !cuffs [player]"
 
 	local Arg2_P = SPLITED[2]
 	local Arg3_P = SPLITED[3]
@@ -3485,17 +3312,6 @@ function AdminChatted(Text,Speaker)
 		wait(.1)
 		MoveTo(org)
 	end
-	if commandPLAYER("cuffs") then
-		local Args = Arg2_P
-		if Args then
-			local Player = FindPlayer(Args)
-			if Player then
-				bring(Player,Player.Character:GetPrimaryPartCFrame(),"a",true)
-			end
-		else
-			bring(Speaker,Speaker.Character:GetPrimaryPartCFrame(),"a",true)
-		end
-	end
 	if commandPLAYER("kill") then
 		local Args = Arg2_P
 		local Check1 = function(ar)
@@ -3521,23 +3337,6 @@ function AdminChatted(Text,Speaker)
 			end
 		else
 			Notif("Missing arg2 !kill player")
-		end
-	end
-	if commandPLAYER("fling") then
-		local r = FindPlayer(Arg2_P)
-		if r then
-			if r.Character:FindFirstChildOfClass("Humanoid") and r.Character:FindFirstChildOfClass("Humanoid").Health <1 then
-				Msg(Speaker,"[ADMIN]: Player is dead please try again.")
-				return
-			end
-			if not Speaker.Character then
-				Notif("Please try again (Character not found).")
-				return
-			end
-			bring(r,nil,nil,"fling")
-		else
-			Msg(Speaker,"Player not found!")
-			NotFound()
 		end
 	end
 	if commandPLAYER("loopkill") then
@@ -3571,26 +3370,6 @@ function AdminChatted(Text,Speaker)
 		end
 	end
 
-	if commandPLAYER("crimbase") then
-		local Pos = CFrame.new(-858.08990478516, 94.476051330566, 2093.8288574219)
-		bring(Speaker,Pos)
-	end
-	if commandPLAYER("tower") then
-		local Pos = CFrame.new(822, 131, 2588)
-		bring(Speaker,Pos)
-	end
-	if commandPLAYER("armory") then
-		local Pos  = CFrame.new(789, 100, 2260)
-		bring(Speaker,Pos)
-	end
-	if commandPLAYER("prison") then
-		local Pos = CFrame.new(918.77, 100, 2379.07)
-		bring(Speaker,Pos)
-	end
-	if commandPLAYER("yard") then
-		local Pos = CFrame.new(791, 98, 2498)
-		bring(Speaker,Pos)
-	end
 	if commandPLAYER("unloopkill") then
 		local r = FindPlayer(Arg2_P)
 		if Arg2_P=="all" then
@@ -3602,23 +3381,6 @@ function AdminChatted(Text,Speaker)
 			table.remove(loopkilling,table.find(loopkilling,r.Name))
 			Notif("unlooped "..r.Name)
 		else
-			NotFound()
-		end
-	end
-	if commandPLAYER("bring") then
-		local r = FindPlayer(Arg2_P)
-		if r then
-			if r.Character:FindFirstChildOfClass("Humanoid") and r.Character:FindFirstChildOfClass("Humanoid").Health <1 then
-				Msg(Speaker,"[ADMIN]: Player is dead please try again.")
-				return
-			end
-			if not Speaker.Character then
-				Notif("Please try again (Character not found).")
-				return
-			end
-			bring(r,Speaker.Character:GetPrimaryPartCFrame()*CFrame.new(0,5,0))
-		else
-			Msg(Speaker,"[ADMIN]: Player not found!")
 			NotFound()
 		end
 	end
@@ -3642,36 +3404,8 @@ function AdminChatted(Text,Speaker)
 		wait(1)
 		Last_Team(LastTeam)
 	end
-	if commandPLAYER("criminal") then
-		local r = FindPlayer(Arg2_P)
-		if r then
-			if r.Character:FindFirstChildOfClass("Humanoid") and r.Character:FindFirstChildOfClass("Humanoid").Health <1 then
-				Msg(Speaker,"[ADMIN]: Player is dead please try again.")
-				return
-			end
-			if not Speaker.Character then
-				Notif("Please try again (Character not found).")
-				return
-			end
-			bring(r,r.Character:GetPrimaryPartCFrame()*CFrame.new(0,1,0),nil,"crim")
-		else
-			Msg(Speaker,"[ADMIN]: Player not found!")
-			NotFound()
-		end
-	end
-	if commandPLAYER("goto") then
-		local r = FindPlayer(Arg2_P)
-		if r then
-			if not Speaker.Character then
-				Notif("Please try again (Character not found).")
-				return
-			end
-			bring(Speaker,r.Character:GetPrimaryPartCFrame()*CFrame.new(0,1,0),nil,"crim")
-		else
-			Msg(Speaker,"[ADMIN]: Player not found!")
-			NotFound()
-		end
-	end
+
+
 	if commandPLAYER("cmds") then
 		Msg(Speaker,CmdsList)
 		wait(.1)
