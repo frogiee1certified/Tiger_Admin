@@ -217,27 +217,29 @@ function Msg(player,Text)
 	local ohString2 = "All"
 	game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(ohString1, ohString2)
 end
-if writefile and makefolder and readfile and isfile then
-	if isfile("Tiger Admin") == false or isfile("Tiger_Admin/Invite.json") == false then
-		makefolder("Tiger_Admin")
-		if isfile("Tiger_Admin/Invite.json") == false then
-			writefile("Tiger_Admin/Invite.json",game:GetService("HttpService"):JSONEncode({
-				Invite_To_Server = true
-			}))
-		end
-		if isfile("Tiger_Admin/SavedAdmins.json") == false then
-			writefile("Tiger_Admin/SavedAdmins.json",game:GetService("HttpService"):JSONEncode({}))
-		else
-			local Content = game:GetService("HttpService"):JSONDecode(readfile("Tiger_Admin/SavedAdmins.json"))
-			for i,v in pairs(Content) do
-				if v then
-					print(v)
-					States.Admined[#States.Admined+1] = v
+pcall(function()
+	if writefile and makefolder and readfile and isfile then
+		if isfile("Tiger Admin") == false or isfile("Tiger_Admin/Invite.json") == false then
+			makefolder("Tiger_Admin")
+			if isfile("Tiger_Admin/Invite.json") == false then
+				writefile("Tiger_Admin/Invite.json",game:GetService("HttpService"):JSONEncode({
+					Invite_To_Server = true
+				}))
+			end
+			if isfile("Tiger_Admin/SavedAdmins.json") == false then
+				writefile("Tiger_Admin/SavedAdmins.json",game:GetService("HttpService"):JSONEncode({}))
+			else
+				local Content = game:GetService("HttpService"):JSONDecode(readfile("Tiger_Admin/SavedAdmins.json"))
+				for i,v in pairs(Content) do
+					if v then
+						print(v)
+						States.Admined[#States.Admined+1] = v
+					end
 				end
 			end
 		end
 	end
-end
+end)
 do --//Main Gui
 	ScreenGui.Parent = (game:GetService("CoreGui") or gethui())
 	ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
@@ -2349,7 +2351,7 @@ do
 		end
 		NOFLY()
 		sFLY(true)
-		
+
 	end,"Fly like a bird! but in a car [PC ONLY]"," [SPEED]")
 	Add_Command("uncarfly",function(Args)
 		local Args = GetArgs(Args)
