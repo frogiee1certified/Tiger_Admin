@@ -28,6 +28,7 @@ local Games = {
 	{PlaceId = 6403373529,Url = "https://raw.githubusercontent.com/H17S32/Tiger_Intact/main/SlapBattles"},
 	{PlaceId = 537413528,Url = "https://raw.githubusercontent.com/H17S32/Tiger_Intact/main/BuildABoat.lua"},
 	{PlaceId = 11729688377,Url = "https://raw.githubusercontent.com/H17S32/Tiger_Intact/main/BoogaBooga"},
+	{PlaceId = 11879754496,Url = "https://raw.githubusercontent.com/H17S32/Tiger_Intact/main/VoidNessBoogaBooga"},
 
 }
 for _,v in pairs(Games) do
