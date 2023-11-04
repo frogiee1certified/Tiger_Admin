@@ -1,3 +1,3 @@
-# **Tiger_Admin**
-# A powerfull script for **Roblox.**
-#Join discord for more information https://discord.gg/zj5xRp3ZKn
+
+## **Tiger admin**
+## A discontinued project of mine, Created in 2019
