@@ -1,4 +1,5 @@
 --[[
+Forged by h17s3
 ]]
 
 if not getconnections or not hookmetamethod or not getnamecallmethod or not ((getgenv and getgenv()) or _G) then
