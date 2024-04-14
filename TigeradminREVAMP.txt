@@ -2399,9 +2399,10 @@ do
 
 		end
 	end,nil,"[PLAYER]")
-	API:CreateCmd("addnuke", "Player dies everyone dies", function(args)
+	API:CreateCmd("addnuke", "ALLAHU AKBAR", function(args)
 		local Target = API:FindPlayer(args[2])
-		game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer("!!!A NUKE HAS BEEN PLACED ON "..Target.Name.." KILLING HIM WILL GET EVERYONE DEAD!!!", "ALL")
+		game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer("!!! "..Target.Name.." BECAME A BOMBER KILLING HIM WILL MAKE HIM", "ALL")
+        game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer("ALLAHU AKBAR!!!", "ALL")
 		repeat task.wait()
 			if Target.Character and Target.Character:FindFirstChildOfClass("Humanoid") and Target.Character:FindFirstChildOfClass("Humanoid").Health <1 then
 				break
@@ -2410,11 +2411,11 @@ do
 		game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(Target.Name.." IS DEAD NUKE LAUNCHING!!!", "ALL")
 		wait(1.5)
 		--//This is what I call perfect work 
-		game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer("LAUNCHING IN 3", "ALL")
+		game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer("ALLAHU AKBAR IN 3", "ALL")
 		wait(1.5)
-		game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer("LAUNCHING IN 2", "ALL")			
+		game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer("ALLAHU AKBAR IN 2", "ALL")			
 		wait(1.5)
-		game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer("LAUNCHING IN 1", "ALL")
+		game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer("ALLAHU AKBAR IN 1", "ALL")
 		wait(1)
 		API:killall()
 		API:Notif("Nuke from player has been removed.")
@@ -3728,7 +3729,12 @@ function AdminChatted(Text,Speaker)
 		Prefix.."cbase [ME,PLAYER]",
 		Prefix.."yard [ME,PLAYER]",
 		Prefix.."tower [ME,PLAYER]",
-		Prefix.."armory [ME,PLAYER]"
+		Prefix.."armory [ME,PLAYER]",
+        "Some info you should know:",
+        "If you are attempting to",
+        "bring or teleport it will",
+        "not work if they are sitting",
+        "down."
 	}
 	Speaker = game:GetService("Players"):FindFirstChild(Speaker)
 	if Unloaded then return end
