@@ -602,7 +602,7 @@ function API:bring(Target,TeleportTo,MoreTP,DontBreakCar)
 		if Failed then
 			API:Notif("Failed to bring the player!")
 			if BringingFromAdmin then
-				local ohString1 = "/w "..Target.Name.." ".."ADMIN: Bring has failed! Try again later."
+				local ohString1 = "/w "..Target.Name.." ".."ADMIN: Bring has failed! This could be due to the player sitting down, or they are dead."
 				local ohString2 = "All"
 				game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(ohString1, ohString2)
 			end
@@ -633,7 +633,7 @@ function API:bring(Target,TeleportTo,MoreTP,DontBreakCar)
 		end
 	else
 		if BringingFromAdmin then
-			local ohString1 = "/w "..Target.Name.." ".."ADMIN: Bring has failed! Try again later."
+			local ohString1 = "/w "..Target.Name.." ".."ADMIN: Bring has failed! This could be due to the player sitting down, or they are dead."
 			local ohString2 = "All"
 			game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(ohString1, ohString2)
 
